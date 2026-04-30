@@ -47,28 +47,28 @@ public class Seeder {
         String sql = "INSERT INTO items (owner_id, title, category, price, condition, description, status) VALUES (?,?,?,?,?,?,?)";
         Object[][] items = {
             // Dadang (id=1) punya alat dapur & kebersihan
-            {1, "Waffle Maker",        "Kitchen",   25_000, "Good",         "Buat waffle crispy di rumah. Kapasitas 2 buah sekaligus, anti lengket, mudah dibersihkan.",                              "AVAILABLE"},
-            {1, "Slow Juicer",         "Kitchen",   50_000, "Good",         "Juicer lambat untuk sari buah murni tanpa panas berlebih. Cocok untuk diet sehat.",                                       "AVAILABLE"},
-            {1, "High-Pressure Washer","Cleaning",  60_000, "Needs Repair", "Mesin cuci bertekanan tinggi. Cocok untuk cuci motor, mobil, atau teras. Selang 5 meter.",                               "AVAILABLE"},
-            {1, "Wet & Dry Vacuum",    "Cleaning",  50_000, "Good",         "Vacuum cleaner serbaguna bisa menyedot debu kering maupun cairan. Kapasitas tangki 15 liter.",                           "AVAILABLE"},
+            {1, "Waffle Maker",        "Kitchen",   25_000, "Good",         "Bikin sarapan mewah ala kafe jadi lebih gampang di rumah. Hasil waffle-nya dijamin renyah di luar tapi tetap lembut di dalam, plus anti lengket jadi nggak repot pas dibersihkan.",                              "AVAILABLE"},
+            {1, "Slow Juicer",         "Kitchen",   50_000, "Good",         "Cara terbaik buat menikmati sari buah asli tanpa merusak nutrisinya. Teknologi perasan lambatnya bikin vitamin tetap terjaga dan nggak cepat berubah warna, pas banget buat kamu yang lagi jalanin diet sehat.",                                       "AVAILABLE"},
+            {1, "High-Pressure Washer","Cleaning",  60_000, "Needs Repair", "Bersihin lumut di teras atau cuci kendaraan jadi jauh lebih cepat dan bersih pakai semprotan air bertekanan tinggi ini. Selangnya panjang, jadi kamu bebas bergerak tanpa ribet.",                               "AVAILABLE"},
+            {1, "Wet & Dry Vacuum",    "Cleaning",  50_000, "Good",         "Gak cuma debu, vacuum cleaner ini juga jago buat nyedot tumpahan air. Kapasitas tangkinya besar, pas banget buat beresin rumah yang baru selesai renovasi atau kena banjir.",                           "AVAILABLE"},
 
             // Diana (id=2) punya elektronik & peralatan
-            {2, "Cordless Power Drill", "Tools",    35_000, "Good",         "Bor nirkabel 18V dengan 2 baterai cadangan. Dilengkapi 20 mata bor berbagai ukuran.",                                   "AVAILABLE"},
-            {2, "Step Ladder",          "Tools",    25_000, "Fair",         "Tangga lipat aluminium 5 anak tangga. Kuat hingga 150 kg. Ringan dan mudah disimpan.",                                   "AVAILABLE"},
-            {2, "Electric Sander",      "Tools",    40_000, "Good",         "Mesin amplas orbital untuk penghalusan kayu atau dinding. Dilengkapi berbagai tingkat kekasaran amplas.",                "AVAILABLE"},
-            {2, "Projector HD",         "Electronics", 80_000, "Good",      "Proyektor 1080p Full HD. Cocok untuk presentasi, nonton bareng, atau acara keluarga. Koneksi HDMI & USB.",              "AVAILABLE"},
+            {2, "Cordless Power Drill", "Tools",    35_000, "Good",         "Bor serbaguna tanpa kabel yang bikin kerjaan makin praktis. Tenaganya stabil buat bolongin tembok atau kayu, lengkap dengan baterai cadangan biar kerjaanmu nggak terhambat.",                                   "AVAILABLE"},
+            {2, "Step Ladder",          "Tools",    25_000, "Fair",         "Tangga aluminium yang wajib ada di rumah. Ringan buat dibawa-bawa tapi sangat kokoh menahan beban, dan kalau sudah dilipat, bisa diselipkan di mana saja.",                                   "AVAILABLE"},
+            {2, "Electric Sander",      "Tools",    40_000, "Good",         "Capek ngamplas kayu manual? Pakai mesin ini biar hasilnya jauh lebih halus dan rapi. Cocok buat kamu yang lagi ngerjain projek DIY atau perbaikan furnitur di rumah.",                "AVAILABLE"},
+            {2, "Projector HD",         "Electronics", 80_000, "Good",      "Ubah ruang tamu jadi bioskop pribadi atau bikin presentasi jadi lebih profesional. Kualitas gambarnya tajam (Full HD) dan gampang banget disambungin ke laptop atau flashdisk.",              "AVAILABLE"},
 
             // Riko (id=3) punya peralatan dapur besar
-            {3, "Food Processor",       "Kitchen",  45_000, "Fair",         "Chopper, slicer, dan blender dalam satu alat. Ideal untuk persiapan masak skala besar.",                                "AVAILABLE"},
-            {3, "Ice Cream Maker",      "Kitchen",  60_000, "Good",         "Buat hingga 1.5 liter es krim homemade dalam 20-30 menit. Tangki beku terpisah, mudah dioperasikan.",                   "AVAILABLE"},
-            {3, "Jumbo Rice Cooker",    "Kitchen",  20_000, "Good",         "Rice cooker kapasitas 5 liter. Cocok untuk hajatan kecil atau katering. Fungsi warm otomatis.",                         "UNAVAILABLE"},
-            {3, "Artisan Stand Mixer",  "Kitchen",  40_000, "Good",         "Mixer duduk 5 liter 10 kecepatan. Dilengkapi hook, paddle, dan whisk. Ideal untuk membuat adonan kue dan roti.",        "AVAILABLE"},
+            {3, "Food Processor",       "Kitchen",  45_000, "Fair",         "Asisten andalan buat persiapan masak besar. Bisa potong, cincang, sampai nge-blender semua bahan masakan dalam sekejap, bikin waktu masakmu jadi jauh lebih hemat.",                                "AVAILABLE"},
+            {3, "Ice Cream Maker",      "Kitchen",  60_000, "Good",         "Bikin es krim racikan sendiri cuma butuh waktu 20 menitan saja. Teksturnya lembut, kapasitasnya pas buat serumah, dan tangki bekunya gampang banget dilepas-pasang buat dicuci.",                   "AVAILABLE"},
+            {3, "Jumbo Rice Cooker",    "Kitchen",  20_000, "Good",         "Lagi ada acara keluarga atau hajatan kecil? Rice cooker kapasitas 5 liter ini solusinya. Masak nasi dalam jumlah banyak jadi praktis dan nasi tetap hangat sampai acara selesai.",                         "UNAVAILABLE"},
+            {3, "Artisan Stand Mixer",  "Kitchen",  40_000, "Good",         "Mixer andalan buat kamu yang hobi baking. Tenaganya kuat dengan 10 pilihan kecepatan, cocok banget buat bikin adonan roti atau kue dalam jumlah banyak sekaligus.",        "AVAILABLE"},
 
             // Salma (id=4) punya peralatan kebun & rumah
-            {4, "Foldable Hand Truck",  "Tools",    25_000, "Good",         "Troli lipat kapasitas 80 kg. Roda karet anti gores. Mudah disimpan di sudut sempit.",                                   "AVAILABLE"},
-            {4, "Garden Hose Set",      "Gardening",15_000, "Good",         "Selang air 15 meter dengan 7 mode semprotan. Cocok untuk menyiram tanaman, taman, atau cuci kendaraan.",                "AVAILABLE"},
-            {4, "Electric Lawn Mower",  "Gardening",55_000, "Fair",         "Mesin pemotong rumput listrik. Lebar potong 32 cm. Kabel 10 meter. Cocok untuk halaman ukuran sedang.",                 "AVAILABLE"},
-            {4, "Portable Blower",      "Gardening",20_000, "Good",         "Blower listrik untuk membersihkan daun kering, debu di teras, atau kotoran di garasi. Ringan dan bertenaga.",           "AVAILABLE"},
+            {4, "Foldable Hand Truck",  "Tools",    25_000, "Good",         "Solusi buat angkut-angkut barang berat sampai 80 kg tanpa bikin pinggang sakit. Trolinya bisa dilipat tipis, jadi praktis banget dibawa di bagasi mobil atau disimpan di balik pintu.",                                   "AVAILABLE"},
+            {4, "Garden Hose Set",      "Gardening",15_000, "Good",         "Selang air 15 meter yang antiribet. Punya 7 mode semprotan yang bisa kamu sesuaikan, mau buat nyiram tanaman yang lembut sampai cuci mobil yang kencang, semua bisa.",                "AVAILABLE"},
+            {4, "Electric Lawn Mower",  "Gardening",55_000, "Fair",         "Potong rumput nggak perlu capek lagi pakai mesin listrik ini. Hasil potongannya rapi, nggak berisik seperti mesin bensin, dan sangat mudah dijalankan di halaman rumah.",                 "AVAILABLE"},
+            {4, "Portable Blower",      "Gardening",20_000, "Good",         "Cara paling santai buat bersihin daun kering atau debu di garasi. Alatnya ringan dan gampang digenggam, tapi tiupannya kencang banget buat usir kotoran di sudut sulit.",           "AVAILABLE"},
         };
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             for (Object[] it : items) {
