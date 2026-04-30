@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "WebFetch(domain:www.figma.com)",
+      "Bash(python -c ' *)",
+      "Bash(mvn compile *)",
+      "PowerShell(Get-Command mvn -ErrorAction SilentlyContinue)",
+      "PowerShell($env:JAVA_HOME)",
+      "PowerShell(java -version 2>&1; Get-ChildItem \"C:\\\\Program Files\" -ErrorAction SilentlyContinue | Where-Object {$_.Name -match \"IntelliJ|Eclipse|NetBeans|Maven\"})"
+    ]
+  }
+}
