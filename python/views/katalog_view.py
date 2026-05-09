@@ -5,8 +5,8 @@ from PyQt6.QtWidgets import (
     QPushButton, QComboBox, QScrollArea, QGridLayout,
     QGraphicsDropShadowEffect
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QPropertyAnimation, QEasingCurve
-from PyQt6.QtGui import QColor, QPixmap, QPainter, QPainterPath
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QColor, QPixmap
 
 from controllers.alat_controller import AlatController
 from models.alat import Alat
@@ -96,13 +96,6 @@ class _HoverCard(QWidget):
 
         lay.addWidget(img)
         lay.addWidget(info)
-
-    def paintEvent(self, event):
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        path = QPainterPath()
-        path.addRoundedRect(0.0, 0.0, float(self.width()), float(self.height()), 14, 14)
-        p.fillPath(path, QColor("white"))
 
     def enterEvent(self, event):
         self._animate_shadow(28, 0.14, 8)

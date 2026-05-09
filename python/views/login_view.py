@@ -191,8 +191,10 @@ class LoginView(QWidget):
         link_daftar = QPushButton("Don't have an account? Sign Up →")
         link_daftar.setCursor(Qt.CursorShape.PointingHandCursor)
         link_daftar.setStyleSheet(
-            "background: transparent; color: rgba(165,180,252,0.90); border: none;"
-            "font-size: 12px; font-weight: 500;"
+            "QPushButton {"
+            "  background: transparent; color: rgba(165,180,252,0.90); border: none;"
+            "  font-size: 12px; font-weight: 500;"
+            "}"
             "QPushButton:hover { color: white; }"
         )
         link_daftar.clicked.connect(self.go_register)

@@ -7,7 +7,17 @@
       "Bash(mvn compile *)",
       "PowerShell(Get-Command mvn -ErrorAction SilentlyContinue)",
       "PowerShell($env:JAVA_HOME)",
-      "PowerShell(java -version 2>&1; Get-ChildItem \"C:\\\\Program Files\" -ErrorAction SilentlyContinue | Where-Object {$_.Name -match \"IntelliJ|Eclipse|NetBeans|Maven\"})"
+      "PowerShell(java -version 2>&1; Get-ChildItem \"C:\\\\Program Files\" -ErrorAction SilentlyContinue | Where-Object {$_.Name -match \"IntelliJ|Eclipse|NetBeans|Maven\"})",
+      "Read(//c/Users/kayta/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/7f4a1b4a-6244-4671-b56d-842fdc905570/f99e5b55-8da8-41a2-94f1-89a551935101/skills/docx/**)",
+      "Bash(python scripts/office/extract-text \"C:\\\\Users\\\\kayta\\\\Downloads\\\\K02_G05_Final_CD \\(6\\).docx\")",
+      "Bash(cd /tmp)",
+      "Bash(python3)",
+      "Bash(git checkout *)",
+      "Bash(pip show *)",
+      "Bash(pip install *)",
+      "Bash(cp \"D:/Pinjemin  Aja!/src/main/resources/images/\"*.jpg \"D:/Pinjemin  Aja!/python/resources/images/\" && echo \"images copied\")",
+      "Bash(python main.py)",
+      "Bash(start pythonw *)"
     ]
   }
 }

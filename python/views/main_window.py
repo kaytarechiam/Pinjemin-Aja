@@ -137,8 +137,10 @@ class MainWindow(QMainWindow):
         btn_toggle.setFixedSize(36, 36)
         btn_toggle.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_toggle.setStyleSheet(
-            "background: rgba(255,255,255,0.12); color: white; border: none;"
-            "border-radius: 8px; font-size: 15px;"
+            "QPushButton {"
+            "  background: rgba(255,255,255,0.12); color: white; border: none;"
+            "  border-radius: 8px; font-size: 15px;"
+            "}"
             "QPushButton:hover { background: rgba(255,255,255,0.20); }"
         )
         btn_toggle.clicked.connect(self._toggle_sidebar)
@@ -253,8 +255,10 @@ class MainWindow(QMainWindow):
         btn_logout.setToolTip("Logout")
         btn_logout.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_logout.setStyleSheet(
-            "background: rgba(255,255,255,0.12); color: white; border: none;"
-            "border-radius: 15px; font-size: 14px;"
+            "QPushButton {"
+            "  background: rgba(255,255,255,0.12); color: white; border: none;"
+            "  border-radius: 15px; font-size: 14px;"
+            "}"
             "QPushButton:hover { background: rgba(239,68,68,0.40); }"
         )
         btn_logout.clicked.connect(self._on_logout)
