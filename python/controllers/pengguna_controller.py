@@ -143,3 +143,16 @@ class PenggunaController:
                 (nominal, id_pengguna)
             )
         return True
+
+    # ── Convenience shorthands (dipakai views) ────────────────────────────────
+
+    def login(self, no_wa: str, sandi: str) -> Optional[Pengguna]:
+        """Shorthand: proses_login + return Pengguna object (None jika gagal)."""
+        if self.proses_login(no_wa, sandi):
+            return self._pengguna
+        return None
+
+    def registrasi(self, data: dict) -> bool:
+        """Shorthand: proses_registrasi tanpa perlu konfirmasi_sandi di dict."""
+        data_lengkap = {**data, "konfirmasi_sandi": data.get("kata_sandi", "")}
+        return self.proses_registrasi(data_lengkap)

@@ -1,32 +1,30 @@
-"""UI helpers, styles, and widget factories — PyQt6 modern design."""
+"""UI helpers, styles, and widget factories — PyQt6, matching Java design system."""
 from __future__ import annotations
 from pathlib import Path
 
 from PyQt6.QtWidgets import (
     QLabel, QWidget, QFrame, QPushButton, QLineEdit,
-    QTextEdit, QGraphicsDropShadowEffect, QHBoxLayout,
-    QMessageBox
+    QTextEdit, QHBoxLayout, QMessageBox
 )
-from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, QRectF
 from PyQt6.QtGui import QColor, QPixmap, QPainter, QPainterPath
 
-# ── Brand colours ─────────────────────────────────────────────────────────────
+# ── Brand colours (matching Java UIHelper exactly) ────────────────────────────
 BLUE        = "#3D5AF1"
-BLUE_DARK   = "#2541D0"
-BLUE_LIGHT  = "#EEF1FE"
-PURPLE      = "#6366F1"
+BLUE_DARK   = "#2D46D6"
+BLUE_LIGHT  = "#EEF1FF"
 GREEN       = "#10B981"
 GREEN_LIGHT = "#D1FAE5"
 RED         = "#EF4444"
 RED_LIGHT   = "#FEE2E2"
 AMBER       = "#F59E0B"
 AMBER_LIGHT = "#FEF3C7"
-LIGHT_BG    = "#F8FAFC"
-BORDER      = "#E2E8F0"
-TEXT_DARK   = "#0F172A"
-TEXT_MID    = "#475569"
-TEXT_GRAY   = "#94A3B8"
-SIDEBAR_BG  = "#1E1B4B"
+LIGHT_BG    = "#F7F8FC"
+BORDER      = "#E8EAF0"
+TEXT_DARK   = "#1A1D2E"
+TEXT_MID    = "#4B5563"
+TEXT_GRAY   = "#9CA3AF"
+WHITE       = "#FFFFFF"
 CARD_BG     = "#FFFFFF"
 
 # ── Image map ─────────────────────────────────────────────────────────────────
@@ -90,23 +88,15 @@ def format_rupiah(amount: float) -> str:
     return "Rp {:,.0f}".format(amount).replace(",", ".")
 
 
-# ── Drop shadow ───────────────────────────────────────────────────────────────
-def add_shadow(widget: QWidget, blur: int = 18, color: str = "#000000",
-               opacity: float = 0.10, offset=(0, 4)) -> QGraphicsDropShadowEffect:
-    shadow = QGraphicsDropShadowEffect(widget)
-    shadow.setBlurRadius(blur)
-    c = QColor(color)
-    c.setAlphaF(opacity)
-    shadow.setColor(c)
-    shadow.setOffset(*offset)
-    widget.setGraphicsEffect(shadow)
-    return shadow
+# ── Stub (kept for API compat — no QGraphicsEffect applied) ───────────────────
+def add_shadow(widget, **kwargs) -> None:
+    """No-op: avoids nested QGraphicsEffect painter conflicts."""
 
 
-# ── QSS fragments ─────────────────────────────────────────────────────────────
+# ── QSS helpers ───────────────────────────────────────────────────────────────
 def input_style() -> str:
     return (
-        f"background: white; border: 1.5px solid {BORDER}; border-radius: 10px;"
+        f"background: white; border: 1.5px solid {BORDER}; border-radius: 8px;"
         f"padding: 8px 14px; font-size: 13px; color: {TEXT_DARK};"
     )
 
@@ -119,15 +109,15 @@ def primary_button(text: str) -> QPushButton:
     btn.setStyleSheet(
         f"QPushButton {{"
         f"  background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
-        f"  stop:0 {BLUE}, stop:1 {PURPLE});"
-        f"  color: white; border: none; border-radius: 10px;"
+        f"  stop:0 {BLUE}, stop:1 #6B8EFF);"
+        f"  color: white; border: none; border-radius: 8px;"
         f"  font-size: 13px; font-weight: 600; padding: 0 20px;"
         f"}}"
         f"QPushButton:hover {{"
         f"  background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
         f"  stop:0 {BLUE_DARK}, stop:1 {BLUE});"
         f"}}"
-        f"QPushButton:pressed {{ padding-top: 2px; }}"
+        f"QPushButton:pressed {{ padding-top: 1px; }}"
     )
     return btn
 
@@ -139,7 +129,7 @@ def outline_button(text: str) -> QPushButton:
     btn.setStyleSheet(
         f"QPushButton {{"
         f"  background: transparent; color: {BLUE};"
-        f"  border: 1.5px solid {BLUE}; border-radius: 10px;"
+        f"  border: 1.5px solid {BLUE}; border-radius: 8px;"
         f"  font-size: 13px; font-weight: 600; padding: 0 20px;"
         f"}}"
         f"QPushButton:hover {{ background: {BLUE_LIGHT}; }}"
@@ -150,14 +140,13 @@ def outline_button(text: str) -> QPushButton:
 def styled_input(placeholder: str = "") -> QLineEdit:
     le = QLineEdit()
     le.setPlaceholderText(placeholder)
-    le.setFixedHeight(44)
+    le.setFixedHeight(42)
     le.setStyleSheet(
         f"QLineEdit {{"
-        f"  background: white; border: 1.5px solid {BORDER}; border-radius: 10px;"
+        f"  background: white; border: 1.5px solid {BORDER}; border-radius: 8px;"
         f"  padding: 0 14px; font-size: 13px; color: {TEXT_DARK};"
         f"}}"
         f"QLineEdit:focus {{ border: 2px solid {BLUE}; }}"
-        f"QLineEdit::placeholder {{ color: {TEXT_GRAY}; }}"
     )
     return le
 
@@ -173,8 +162,8 @@ def styled_textarea(placeholder: str = "") -> QTextEdit:
     te.setPlaceholderText(placeholder)
     te.setStyleSheet(
         f"QTextEdit {{"
-        f"  background: white; border: 1.5px solid {BORDER}; border-radius: 10px;"
-        f"  padding: 10px 14px; font-size: 13px; color: {TEXT_DARK};"
+        f"  background: white; border: 1.5px solid {BORDER}; border-radius: 8px;"
+        f"  padding: 8px 14px; font-size: 13px; color: {TEXT_DARK};"
         f"}}"
         f"QTextEdit:focus {{ border: 2px solid {BLUE}; }}"
     )
@@ -184,7 +173,7 @@ def styled_textarea(placeholder: str = "") -> QTextEdit:
 def heading(text: str) -> QLabel:
     lbl = QLabel(text)
     lbl.setStyleSheet(
-        f"font-size: 24px; font-weight: 700; color: {TEXT_DARK}; background: transparent;"
+        f"font-size: 22px; font-weight: 700; color: {TEXT_DARK}; background: transparent;"
     )
     return lbl
 
@@ -192,7 +181,7 @@ def heading(text: str) -> QLabel:
 def subheading(text: str) -> QLabel:
     lbl = QLabel(text)
     lbl.setStyleSheet(
-        f"font-size: 16px; font-weight: 600; color: {TEXT_DARK}; background: transparent;"
+        f"font-size: 15px; font-weight: 600; color: {TEXT_DARK}; background: transparent;"
     )
     return lbl
 
@@ -215,30 +204,40 @@ def badge(text: str, bg: str, fg: str) -> QLabel:
     return lbl
 
 
-def available_badge()   -> QLabel: return badge("● TERSEDIA", GREEN_LIGHT, "#065F46")
-def unavailable_badge() -> QLabel: return badge("● DIPINJAM", RED_LIGHT,   "#991B1B")
-def ongoing_badge()     -> QLabel: return badge("● BERJALAN", AMBER_LIGHT, "#92400E")
-def completed_badge()   -> QLabel: return badge("● SELESAI",  GREEN_LIGHT, "#065F46")
+def available_badge()   -> QLabel: return badge("● Tersedia", GREEN_LIGHT,  "#065F46")
+def unavailable_badge() -> QLabel: return badge("● Dipinjam", RED_LIGHT,    "#991B1B")
+def ongoing_badge()     -> QLabel: return badge("● Berjalan", AMBER_LIGHT,  "#92400E")
+def completed_badge()   -> QLabel: return badge("● Selesai",  GREEN_LIGHT,  "#065F46")
 
 
-# ── Shadow card ───────────────────────────────────────────────────────────────
+# ── White card — pure QSS, zero QGraphicsEffect ───────────────────────────────
 class ShadowCard(QWidget):
-    """White rounded card with drop-shadow. Use as a layout container."""
+    """White rounded card styled entirely via QSS.
+
+    No paintEvent, no QGraphicsEffect — safe inside any QGraphicsOpacityEffect
+    parent (e.g. MainWindow._stack). The subtle top-left/bottom-right border
+    gradient simulates depth without touching the painter stack.
+    """
 
     def __init__(self, radius: int = 14, parent=None):
         super().__init__(parent)
-        self._radius = radius
-        add_shadow(self, blur=24, opacity=0.09, offset=(0, 6))
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+        self._apply_style(radius)
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        path = QPainterPath()
-        path.addRoundedRect(
-            0.0, 0.0, float(self.width()), float(self.height()),
-            self._radius, self._radius
+    def _apply_style(self, r: int):
+        self.setStyleSheet(
+            f"ShadowCard, QWidget[shadowCard='true'] {{"
+            f"  background: {CARD_BG};"
+            f"  border-radius: {r}px;"
+            f"  border: 1px solid {BORDER};"
+            f"}}"
         )
-        painter.fillPath(path, QColor(CARD_BG))
+        # Fallback: direct object-level sheet so nested inheritance works
+        self.setStyleSheet(
+            f"background: {CARD_BG};"
+            f"border-radius: {r}px;"
+            f"border: 1px solid {BORDER};"
+        )
 
 
 # ── Slide-in toast notification ───────────────────────────────────────────────
@@ -257,20 +256,14 @@ class _Toast(QWidget):
         self.setStyleSheet(
             f"background: {bg}; border-radius: 10px; border: 1.5px solid {fg}55;"
         )
-        add_shadow(self, blur=20, opacity=0.13, offset=(0, 4))
-
         lay = QHBoxLayout(self)
         lay.setContentsMargins(14, 11, 14, 11)
         lay.setSpacing(10)
 
         lbl_i = QLabel(icon)
-        lbl_i.setStyleSheet(
-            f"color: {fg}; font-size: 15px; font-weight: 700; background: transparent;"
-        )
+        lbl_i.setStyleSheet(f"color: {fg}; font-size: 15px; font-weight: 700; background: transparent;")
         lbl_m = QLabel(message)
-        lbl_m.setStyleSheet(
-            f"color: {fg}; font-size: 13px; font-weight: 500; background: transparent;"
-        )
+        lbl_m.setStyleSheet(f"color: {fg}; font-size: 13px; font-weight: 500; background: transparent;")
         lbl_m.setWordWrap(True)
         lbl_m.setMaximumWidth(340)
         lay.addWidget(lbl_i)
@@ -310,11 +303,10 @@ class _Toast(QWidget):
 
 
 def show_toast(message: str, parent: QWidget, kind: str = "success") -> _Toast:
-    """Slide-in toast notification, top-right of parent widget."""
     return _Toast(message, kind, parent)
 
 
-# ── Legacy dialog helpers ─────────────────────────────────────────────────────
+# ── Dialog helpers ────────────────────────────────────────────────────────────
 def show_alert(title: str, message: str, parent=None):
     QMessageBox.information(parent, title, message)
 

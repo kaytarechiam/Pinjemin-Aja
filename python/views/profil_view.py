@@ -2,17 +2,20 @@
 from __future__ import annotations
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
-    QScrollArea, QFrame, QStackedWidget
+    QScrollArea
 )
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSignal
 
 from controllers.pengguna_controller import PenggunaController
 from session import Session
 import views.ui_helper as UI
 
 
-class ProfilView(QScrollArea):
+class ProfilView(QWidget):
     """Layar 6 — Profil Pengguna (UC03, UC04, UC05)."""
+
+    go_wallet        = pyqtSignal()
+    logout_requested = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -20,29 +23,78 @@ class ProfilView(QScrollArea):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setWidgetResizable(True)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.setStyleSheet(f"background: {UI.LIGHT_BG}; border: none;")
+        self.setStyleSheet(f"background: {UI.LIGHT_BG};")
+        outer = QHBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
 
-        root = QWidget()
-        root.setStyleSheet(f"background: {UI.LIGHT_BG};")
-        layout = QVBoxLayout(root)
-        layout.setContentsMargins(40, 30, 40, 40)
+        # ── Left sidebar ──────────────────────────────────────────────────────
+        sidebar = QWidget()
+        sidebar.setFixedWidth(220)
+        sidebar.setStyleSheet(
+            f"background: white; border-right: 1px solid {UI.BORDER};"
+        )
+        sb = QVBoxLayout(sidebar)
+        sb.setContentsMargins(16, 28, 16, 28)
+        sb.setSpacing(4)
+        sb.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        lbl_section = QLabel("Account")
+        lbl_section.setStyleSheet(
+            f"font-size: 11px; font-weight: 700; color: {UI.TEXT_GRAY};"
+            f"letter-spacing: 1px; background: transparent; padding: 0 12px;"
+        )
+        sb.addWidget(lbl_section)
+        sb.addSpacing(8)
+
+        btn_profil = self._sidebar_btn("👤  Profile",  active=True)
+        btn_wallet = self._sidebar_btn("💳  My Wallet", active=False)
+        sb.addWidget(btn_profil)
+        sb.addWidget(btn_wallet)
+        btn_wallet.clicked.connect(self.go_wallet)
+
+        sb.addSpacing(8)
+        sb.addWidget(UI.separator())
+        sb.addSpacing(8)
+
+        btn_logout = QPushButton("⏻  Logout")
+        btn_logout.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn_logout.setFixedHeight(38)
+        btn_logout.setStyleSheet(
+            f"QPushButton {{ background: transparent; color: {UI.RED};"
+            f"  border: none; border-radius: 8px;"
+            f"  font-size: 13px; padding: 0 12px; text-align: left; }}"
+            f"QPushButton:hover {{ background: {UI.RED_LIGHT}; }}"
+        )
+        btn_logout.clicked.connect(self.logout_requested)
+        sb.addWidget(btn_logout)
+        sb.addStretch()
+        outer.addWidget(sidebar)
+
+        # ── Right scrollable content ──────────────────────────────────────────
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setStyleSheet(f"background: {UI.LIGHT_BG}; border: none;")
+
+        content = QWidget()
+        content.setStyleSheet(f"background: {UI.LIGHT_BG};")
+        layout = QVBoxLayout(content)
+        layout.setContentsMargins(36, 30, 36, 36)
         layout.setSpacing(20)
         layout.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         layout.addWidget(UI.heading("My Account"))
 
-        # Profile card — use ShadowCard
+        # Profile card
         card = UI.ShadowCard(14)
-        card.setMaximumWidth(600)
+        card.setMaximumWidth(580)
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(28, 28, 28, 28)
         card_layout.setSpacing(16)
 
         card_layout.addWidget(UI.subheading("Profil"))
 
-        # Avatar
         user = Session.get_current_user()
         initials = (user.get_nama_lengkap()[:2].upper() if user else "?")
         avatar = QLabel(initials)
@@ -54,9 +106,8 @@ class ProfilView(QScrollArea):
         )
         card_layout.addWidget(avatar)
 
-        # Fields
-        self._tf_nama  = UI.styled_input("Nama lengkap")
-        self._tf_no_wa = UI.styled_input("Nomor WhatsApp")
+        self._tf_nama   = UI.styled_input("Nama lengkap")
+        self._tf_no_wa  = UI.styled_input("Nomor WhatsApp")
         self._tf_alamat = UI.styled_textarea("Alamat")
         self._tf_alamat.setFixedHeight(70)
 
@@ -66,46 +117,72 @@ class ProfilView(QScrollArea):
             self._tf_alamat.setPlainText(user.get_alamat())
 
         for lbl_text, widget in [
-            ("Full Name", self._tf_nama),
-            ("WhatsApp Number", self._tf_no_wa),
-            ("Address", self._tf_alamat),
+            ("Full Name",        self._tf_nama),
+            ("WhatsApp Number",  self._tf_no_wa),
+            ("Address",          self._tf_alamat),
         ]:
             lbl = QLabel(lbl_text)
-            lbl.setStyleSheet(f"font-size: 12px; font-weight: 600; color: {UI.TEXT_MID};")
+            lbl.setStyleSheet(
+                f"font-size: 12px; font-weight: 600; color: {UI.TEXT_MID};"
+            )
             card_layout.addWidget(lbl)
             card_layout.addWidget(widget)
 
         card_layout.addWidget(UI.separator())
 
-        # Password section
         lbl_pass = QLabel("Ganti Password")
-        lbl_pass.setStyleSheet(f"font-size: 14px; font-weight: 600; color: {UI.TEXT_DARK};")
+        lbl_pass.setStyleSheet(
+            f"font-size: 14px; font-weight: 600; color: {UI.TEXT_DARK};"
+        )
         card_layout.addWidget(lbl_pass)
 
-        self._tf_sandi_lama  = UI.styled_password("Kata sandi saat ini")
-        self._tf_sandi_baru  = UI.styled_password("Kata sandi baru")
-        self._tf_konfirmasi  = UI.styled_password("Konfirmasi kata sandi baru")
+        self._tf_sandi_lama = UI.styled_password("Kata sandi saat ini")
+        self._tf_sandi_baru = UI.styled_password("Kata sandi baru")
+        self._tf_konfirmasi = UI.styled_password("Konfirmasi kata sandi baru")
 
         for lbl_text, widget in [
             ("Current Password (kosongkan jika tidak ingin ganti)", self._tf_sandi_lama),
-            ("New Password", self._tf_sandi_baru),
+            ("New Password",      self._tf_sandi_baru),
             ("Confirm New Password", self._tf_konfirmasi),
         ]:
             lbl = QLabel(lbl_text)
-            lbl.setStyleSheet(f"font-size: 12px; font-weight: 600; color: {UI.TEXT_MID};")
+            lbl.setStyleSheet(
+                f"font-size: 12px; font-weight: 600; color: {UI.TEXT_MID};"
+            )
             card_layout.addWidget(lbl)
             card_layout.addWidget(widget)
 
         btn_simpan = UI.primary_button("💾  Save Changes")
         btn_simpan.setFixedWidth(200)
         btn_simpan.clicked.connect(self._on_simpan)
-
         card_layout.addWidget(btn_simpan)
 
         layout.addWidget(card)
-        self.setWidget(root)
+        scroll.setWidget(content)
+        outer.addWidget(scroll, 1)
 
-    # ── Actions ───────────────────────────────────────────────────────────────
+    # ── Helpers ───────────────────────────────────────────────────────────────
+
+    def _sidebar_btn(self, text: str, active: bool) -> QPushButton:
+        btn = QPushButton(text)
+        btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        btn.setFixedHeight(38)
+        if active:
+            btn.setStyleSheet(
+                f"QPushButton {{ background: {UI.BLUE_LIGHT}; color: {UI.BLUE};"
+                f"  border: none; border-radius: 8px;"
+                f"  font-size: 13px; font-weight: 600; padding: 0 12px; text-align: left; }}"
+            )
+        else:
+            btn.setStyleSheet(
+                f"QPushButton {{ background: transparent; color: {UI.TEXT_MID};"
+                f"  border: none; border-radius: 8px;"
+                f"  font-size: 13px; padding: 0 12px; text-align: left; }}"
+                f"QPushButton:hover {{ background: {UI.BLUE_LIGHT}; color: {UI.BLUE}; }}"
+            )
+        return btn
+
+    # ── Public API ────────────────────────────────────────────────────────────
 
     def showProfil(self, pengguna=None):
         if pengguna is None:
@@ -129,6 +206,8 @@ class ProfilView(QScrollArea):
     def showPesanError(self, pesan: str):
         UI.show_toast(pesan, self, "error")
 
+    # ── Internal ──────────────────────────────────────────────────────────────
+
     def _on_simpan(self):
         user = Session.get_current_user()
         if user is None:
@@ -141,12 +220,10 @@ class ProfilView(QScrollArea):
             self.showPesanError("Nama, WhatsApp, dan alamat tidak boleh kosong.")
             return
 
-        # UC04 update profil
         self._ctrl.update_profil(user.get_id_pengguna(), {
             "nama_lengkap": nama, "no_wa": no_wa, "alamat": alamat
         })
 
-        # UC05 ubah kata sandi (jika diisi)
         sandi_lama = self._tf_sandi_lama.text()
         sandi_baru = self._tf_sandi_baru.text()
         konfirmasi = self._tf_konfirmasi.text()
@@ -162,7 +239,6 @@ class ProfilView(QScrollArea):
                 self.showPesanError("Password lama salah.")
                 return
 
-        # Refresh session
         updated = self._ctrl.ambil_data_profil(user.get_id_pengguna())
         if updated:
             Session.login(updated)

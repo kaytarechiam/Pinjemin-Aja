@@ -1,7 +1,6 @@
 """main.py — Entry point for Pinjemin Aja! (PyQt6)"""
 import sys
-from PyQt6.QtWidgets import QApplication, QStackedWidget, QGraphicsOpacityEffect
-from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
+from PyQt6.QtWidgets import QApplication, QStackedWidget
 from PyQt6.QtGui import QFont
 
 from database.database import initialize
@@ -64,28 +63,9 @@ class App(QStackedWidget):
         self._fade_to(PAGE_LOGIN)
 
     def _fade_to(self, index: int):
-        """Fade-out → switch → fade-in between top-level screens."""
-        eff = QGraphicsOpacityEffect(self)
-        self.setGraphicsEffect(eff)
-        a_out = QPropertyAnimation(eff, b"opacity", self)
-        a_out.setDuration(120)
-        a_out.setStartValue(1.0)
-        a_out.setEndValue(0.0)
-        a_out.setEasingCurve(QEasingCurve.Type.OutCubic)
-
-        def _switch():
-            self.setCurrentIndex(index)
-            a_in = QPropertyAnimation(eff, b"opacity", self)
-            a_in.setDuration(200)
-            a_in.setStartValue(0.0)
-            a_in.setEndValue(1.0)
-            a_in.setEasingCurve(QEasingCurve.Type.InCubic)
-            a_in.start()
-            self._anim_ref = a_in
-
-        a_out.finished.connect(_switch)
-        a_out.start()
-        self._anim_ref = a_out
+        """Switch between top-level screens (instant — avoids nested QGraphicsEffect
+        conflict between App-level opacity and MainWindow's stack opacity effect)."""
+        self.setCurrentIndex(index)
 
 
 def main():

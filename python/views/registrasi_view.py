@@ -1,63 +1,19 @@
-"""RegistrasiView — CD-01 / UC01 — Glassmorphism dark design."""
+"""RegistrasiView — UC01 — two-panel layout matching Java design."""
 from __future__ import annotations
-import math
 from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QPushButton, QScrollArea
+    QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton,
+    QScrollArea
 )
-from PyQt6.QtCore import Qt, pyqtSignal, QTimer
-from PyQt6.QtGui import QPainter, QPainterPath, QLinearGradient, QColor, QRadialGradient
+from PyQt6.QtCore import Qt, pyqtSignal, QRectF
+from PyQt6.QtGui import QColor, QPainter, QPainterPath, QLinearGradient
 
 from controllers.pengguna_controller import PenggunaController
 import views.ui_helper as UI
-
-
-class _AnimatedBg(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self._t = 0.0
-        timer = QTimer(self)
-        timer.timeout.connect(self._tick)
-        timer.start(40)
-
-    def _tick(self):
-        self._t += 0.012
-        self.update()
-
-    def paintEvent(self, event):
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        w, h = self.width(), self.height()
-        grad = QLinearGradient(0, 0, w, h)
-        grad.setColorAt(0.0, QColor("#0F0C29"))
-        grad.setColorAt(0.5, QColor("#1E1B4B"))
-        grad.setColorAt(1.0, QColor("#24243e"))
-        p.fillRect(0, 0, w, h, grad)
-        for cx_f, cy_f, r, col, phase in [
-            (0.15, 0.30, 220, QColor(61, 90, 241, 48), 0.0),
-            (0.85, 0.65, 260, QColor(99, 102, 241, 44), 1.5),
-            (0.55, 0.85, 150, QColor(16, 185, 129, 30), 0.8),
-        ]:
-            cx = w * cx_f + math.sin(self._t * 0.6 + phase) * 40
-            cy = h * cy_f + math.cos(self._t * 0.5 + phase) * 30
-            rg = QRadialGradient(cx, cy, r)
-            rg.setColorAt(0.0, col)
-            rg.setColorAt(1.0, QColor(0, 0, 0, 0))
-            p.fillRect(0, 0, w, h, rg)
-
-
-class _GlassCard(QWidget):
-    def paintEvent(self, event):
-        p = QPainter(self)
-        p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        path = QPainterPath()
-        path.addRoundedRect(0.0, 0.0, float(self.width()), float(self.height()), 20, 20)
-        p.fillPath(path, QColor(255, 255, 255, 14))
-        p.setPen(QColor(255, 255, 255, 35))
-        p.drawPath(path)
+from views.login_view import _LeftPanel, _FormCard
 
 
 class RegistrasiView(QWidget):
-    """Layar 1 — Registrasi Akun Baru (UC01)."""
+    """Layar 3 — Registrasi Akun Baru (UC01)."""
 
     go_login = pyqtSignal()
 
@@ -67,181 +23,134 @@ class RegistrasiView(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
-        self._bg = _AnimatedBg(self)
-        self._bg.setGeometry(self.rect())
+        outer = QHBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
 
-        self._card = _GlassCard(self)
-        self._card.setFixedSize(460, 610)
-        UI.add_shadow(self._card, blur=60, color="#000000", opacity=0.45, offset=(0, 20))
+        outer.addWidget(_LeftPanel())
 
-        scroll = QScrollArea(self._card)
-        scroll.setWidgetResizable(True)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        scroll.setStyleSheet("background: transparent; border: none;")
-        scroll.setGeometry(0, 0, self._card.width(), self._card.height())
+        # Right: scrollable form
+        right = QWidget()
+        right.setStyleSheet(f"background: {UI.LIGHT_BG};")
+        right_layout = QVBoxLayout(right)
+        right_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        right_layout.setContentsMargins(48, 32, 48, 32)
 
-        inner = QWidget()
-        inner.setStyleSheet("background: transparent;")
-        lay = QVBoxLayout(inner)
-        lay.setContentsMargins(40, 40, 40, 40)
-        lay.setSpacing(0)
+        card = _FormCard()
+        card.setFixedWidth(420)
+        card_layout = QVBoxLayout(card)
+        card_layout.setContentsMargins(40, 36, 40, 36)
+        card_layout.setSpacing(0)
 
-        logo = QLabel("🏠")
-        logo.setStyleSheet("font-size: 32px; background: transparent;")
-        logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title = QLabel("Buat Akun Baru")
-        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        title.setStyleSheet(
-            "color: white; font-size: 20px; font-weight: 700; background: transparent;"
+        # Title
+        lbl_title = QLabel("Create an account ✨")
+        lbl_title.setStyleSheet(
+            f"font-size: 20px; font-weight: 700; color: {UI.TEXT_DARK}; background: transparent;"
         )
-        lay.addWidget(logo)
-        lay.addSpacing(4)
-        lay.addWidget(title)
-        lay.addSpacing(24)
-
-        _input_ss = (
-            "QLineEdit {"
-            "  background: rgba(255,255,255,0.10);"
-            "  border: 1.5px solid rgba(255,255,255,0.20);"
-            "  border-radius: 10px; padding: 0 14px;"
-            "  font-size: 13px; color: white;"
-            "}"
-            "QLineEdit:focus {"
-            "  border: 2px solid rgba(99,102,241,0.80);"
-            "  background: rgba(255,255,255,0.14);"
-            "}"
-            "QLineEdit::placeholder { color: rgba(255,255,255,0.40); }"
+        lbl_sub = QLabel("Bergabung dengan komunitas Pinjemin Aja!")
+        lbl_sub.setStyleSheet(
+            f"font-size: 12px; color: {UI.TEXT_GRAY}; background: transparent;"
         )
-        _ta_ss = (
-            "QTextEdit {"
-            "  background: rgba(255,255,255,0.10);"
-            "  border: 1.5px solid rgba(255,255,255,0.20);"
-            "  border-radius: 10px; padding: 10px 14px;"
-            "  font-size: 13px; color: white;"
-            "}"
-            "QTextEdit:focus { border: 2px solid rgba(99,102,241,0.80); }"
-        )
-        _lbl_ss = (
-            "color: rgba(255,255,255,0.70); font-size: 11px; font-weight: 600;"
-            "background: transparent;"
-        )
+        card_layout.addWidget(lbl_title)
+        card_layout.addSpacing(4)
+        card_layout.addWidget(lbl_sub)
+        card_layout.addSpacing(20)
 
-        self._tf_nama    = UI.styled_input("Nama lengkap Anda")
-        self._tf_no_wa   = UI.styled_input("08xxxxxxxxxx")
-        self._tf_alamat  = UI.styled_textarea("Alamat lengkap")
-        self._tf_sandi   = UI.styled_password("Minimal 6 karakter")
-        self._tf_konfirm = UI.styled_password("Ulangi kata sandi")
-
-        for w in [self._tf_nama, self._tf_no_wa, self._tf_sandi, self._tf_konfirm]:
-            w.setFixedHeight(44)
-            w.setStyleSheet(_input_ss)
+        # Fields
+        self._tf_nama     = UI.styled_input("Nama lengkap")
+        self._tf_no_wa    = UI.styled_input("Nomor WhatsApp")
+        self._tf_alamat   = UI.styled_textarea("Alamat lengkap")
         self._tf_alamat.setFixedHeight(72)
-        self._tf_alamat.setStyleSheet(_ta_ss)
+        self._tf_password = UI.styled_password("Kata sandi (min. 6 karakter)")
+        self._tf_konfirm  = UI.styled_password("Konfirmasi kata sandi")
 
-        for lbl_text, widget in [
-            ("Full Name", self._tf_nama),
-            ("WhatsApp Number", self._tf_no_wa),
-            ("Address", self._tf_alamat),
-            ("Password", self._tf_sandi),
-            ("Confirm Password", self._tf_konfirm),
+        for label, widget in [
+            ("Nama Lengkap",       self._tf_nama),
+            ("Nomor WhatsApp",     self._tf_no_wa),
+            ("Alamat",             self._tf_alamat),
+            ("Password",           self._tf_password),
+            ("Konfirmasi Password", self._tf_konfirm),
         ]:
-            lbl = QLabel(lbl_text)
-            lbl.setStyleSheet(_lbl_ss)
-            lay.addWidget(lbl)
-            lay.addSpacing(5)
-            lay.addWidget(widget)
-            lay.addSpacing(12)
+            lbl = QLabel(label)
+            lbl.setStyleSheet(
+                f"font-size: 12px; font-weight: 600; color: {UI.TEXT_MID}; background: transparent;"
+            )
+            card_layout.addWidget(lbl)
+            card_layout.addSpacing(5)
+            card_layout.addWidget(widget)
+            card_layout.addSpacing(12)
 
-        self._lbl_feedback = QLabel()
-        self._lbl_feedback.setStyleSheet(
-            "color: #FCA5A5; font-size: 12px; background: transparent;"
-        )
-        self._lbl_feedback.setWordWrap(True)
-        self._lbl_feedback.hide()
+        # Error
+        self._lbl_error = QLabel("")
+        self._lbl_error.setStyleSheet(f"color: {UI.RED}; font-size: 12px; background: transparent;")
+        self._lbl_error.setWordWrap(True)
+        self._lbl_error.hide()
+        card_layout.addWidget(self._lbl_error)
+        card_layout.addSpacing(16)
 
-        btn_daftar = QPushButton("Buat Akun  →")
-        btn_daftar.setFixedHeight(48)
-        btn_daftar.setCursor(Qt.CursorShape.PointingHandCursor)
-        btn_daftar.setStyleSheet(
-            "QPushButton {"
-            f"  background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
-            f"  stop:0 {UI.BLUE}, stop:1 {UI.PURPLE});"
-            "  color: white; border: none; border-radius: 10px;"
-            "  font-size: 14px; font-weight: 700;"
-            "}"
-            "QPushButton:hover {"
-            f"  background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
-            f"  stop:0 {UI.BLUE_DARK}, stop:1 {UI.BLUE});"
-            "}"
-        )
+        # Register button
+        btn_daftar = UI.primary_button("Create Account")
+        btn_daftar.setFixedHeight(46)
         btn_daftar.clicked.connect(self._on_daftar)
+        card_layout.addWidget(btn_daftar)
+        card_layout.addSpacing(14)
 
-        link = QPushButton("Sudah punya akun? Log In  →")
-        link.setCursor(Qt.CursorShape.PointingHandCursor)
-        link.setStyleSheet(
-            "background: transparent; color: rgba(165,180,252,0.90); border: none;"
-            "font-size: 12px; font-weight: 500;"
+        # Login link
+        link_masuk = QPushButton("Already have an account? Log In →")
+        link_masuk.setCursor(Qt.CursorShape.PointingHandCursor)
+        link_masuk.setStyleSheet(
+            "QPushButton {"
+            f"  background: transparent; color: {UI.TEXT_GRAY};"
+            "  border: none; font-size: 12px;"
+            "}"
+            f"QPushButton:hover {{ color: {UI.BLUE}; }}"
         )
-        link.clicked.connect(self.go_login)
+        link_masuk.clicked.connect(self.go_login)
+        card_layout.addWidget(link_masuk, alignment=Qt.AlignmentFlag.AlignCenter)
 
-        lay.addWidget(self._lbl_feedback)
-        lay.addSpacing(6)
-        lay.addWidget(btn_daftar)
-        lay.addSpacing(12)
-        lay.addWidget(link, alignment=Qt.AlignmentFlag.AlignCenter)
-        lay.addSpacing(20)
-        scroll.setWidget(inner)
+        right_layout.addWidget(card)
+        outer.addWidget(right, 1)
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self._bg.setGeometry(self.rect())
-        cx = (self.width()  - self._card.width())  // 2
-        cy = (self.height() - self._card.height()) // 2
-        self._card.move(cx, cy)
-
-    # ── Public API ─────────────────────────────────────────────────────────────
+    # ── Public API ────────────────────────────────────────────────────────────
 
     def showFormRegistrasi(self):
-        for w in [self._tf_nama, self._tf_no_wa, self._tf_sandi, self._tf_konfirm]:
+        for w in (self._tf_nama, self._tf_no_wa, self._tf_password, self._tf_konfirm):
             w.clear()
         self._tf_alamat.clear()
-        self._lbl_feedback.hide()
-
-    def getInputData(self) -> dict:
-        return {
-            "nama_lengkap":     self._tf_nama.text().strip(),
-            "no_wa":            self._tf_no_wa.text().strip(),
-            "alamat":           self._tf_alamat.toPlainText().strip(),
-            "kata_sandi":       self._tf_sandi.text(),
-            "konfirmasi_sandi": self._tf_konfirm.text(),
-        }
+        self._lbl_error.hide()
 
     def showPesanError(self, pesan: str):
-        self._lbl_feedback.setStyleSheet(
-            "color: #FCA5A5; font-size: 12px; background: transparent;"
-        )
-        self._lbl_feedback.setText(pesan)
-        self._lbl_feedback.show()
+        self._lbl_error.setText(pesan)
+        self._lbl_error.show()
 
-    def showPesanSukses(self, pesan: str):
-        self._lbl_feedback.setStyleSheet(
-            "color: #6EE7B7; font-size: 12px; background: transparent;"
-        )
-        self._lbl_feedback.setText(pesan)
-        self._lbl_feedback.show()
+    # ── Internal ──────────────────────────────────────────────────────────────
 
     def _on_daftar(self):
-        data = self.getInputData()
-        if not all([data["nama_lengkap"], data["no_wa"], data["alamat"],
-                    data["kata_sandi"], data["konfirmasi_sandi"]]):
-            self.showPesanError("Semua field harus diisi.")
+        self._lbl_error.hide()
+        nama      = self._tf_nama.text().strip()
+        no_wa     = self._tf_no_wa.text().strip()
+        alamat    = self._tf_alamat.toPlainText().strip()
+        password  = self._tf_password.text()
+        konfirm   = self._tf_konfirm.text()
+
+        if not all([nama, no_wa, alamat, password]):
+            self.showPesanError("Semua kolom harus diisi.")
             return
-        if data["kata_sandi"] != data["konfirmasi_sandi"]:
-            self.showPesanError("Kata sandi dan konfirmasi tidak cocok.")
+        if len(password) < 6:
+            self.showPesanError("Password minimal 6 karakter.")
             return
-        ok = self._ctrl.proses_registrasi(data)
+        if password != konfirm:
+            self.showPesanError("Konfirmasi password tidak cocok.")
+            return
+
+        ok = self._ctrl.registrasi({
+            "nama_lengkap": nama,
+            "no_wa":        no_wa,
+            "alamat":       alamat,
+            "kata_sandi":   password,
+        })
         if ok:
-            self.showPesanSukses("Akun berhasil dibuat! Silakan login.")
-            QTimer.singleShot(1500, self.go_login.emit)
+            UI.show_alert("Berhasil", "Akun berhasil dibuat. Silakan login.", self)
+            self.go_login.emit()
         else:
             self.showPesanError("Nomor WhatsApp sudah terdaftar.")

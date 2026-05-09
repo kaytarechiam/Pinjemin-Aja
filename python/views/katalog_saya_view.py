@@ -3,8 +3,8 @@ from __future__ import annotations
 from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton,
     QComboBox, QLineEdit, QTextEdit, QTableWidget, QTableWidgetItem,
-    QHeaderView, QDialog, QDialogButtonBox, QFormLayout, QMessageBox,
-    QScrollArea, QSizePolicy
+    QHeaderView, QDialog, QDialogButtonBox, QFormLayout,
+    QScrollArea, QAbstractItemView,
 )
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QColor
@@ -16,6 +16,39 @@ import views.ui_helper as UI
 
 CATEGORIES = ["Kitchen", "Tools", "Cleaning", "Electronics", "Gardening"]
 CONDITIONS  = ["Good", "Cukup Baik", "Perlu Perbaikan"]
+
+_TABLE_QSS = f"""
+QTableWidget {{
+    border: none;
+    background: white;
+    outline: none;
+    font-size: 13px;
+    color: {UI.TEXT_DARK};
+    gridline-color: transparent;
+}}
+QHeaderView::section {{
+    background: {UI.BLUE_LIGHT};
+    color: {UI.BLUE};
+    font-weight: 700;
+    font-size: 12px;
+    padding: 0 16px;
+    border: none;
+    border-bottom: 2px solid {UI.BLUE};
+    height: 44px;
+}}
+QTableWidget::item {{
+    padding: 0 16px;
+    border: none;
+    border-bottom: 1px solid {UI.BORDER};
+}}
+QTableWidget::item:hover {{
+    background: {UI.LIGHT_BG};
+}}
+QTableWidget::item:selected {{
+    background: {UI.BLUE_LIGHT};
+    color: {UI.BLUE};
+}}
+"""
 
 
 class KatalogSayaView(QWidget):
@@ -29,39 +62,66 @@ class KatalogSayaView(QWidget):
     def _setup_ui(self):
         self.setStyleSheet(f"background: {UI.LIGHT_BG};")
         root = QVBoxLayout(self)
-        root.setContentsMargins(30, 24, 30, 24)
-        root.setSpacing(16)
+        root.setContentsMargins(32, 28, 32, 28)
+        root.setSpacing(20)
 
-        # Header
+        # ── Header ────────────────────────────────────────────────────────────
         hdr = QHBoxLayout()
-        hdr.addWidget(UI.heading("Katalog Saya"))
-        hdr.addStretch()
-        btn_tambah = UI.primary_button("+ Tambah Alat")
+        hdr.setSpacing(0)
+
+        title_col = QVBoxLayout()
+        title_col.setSpacing(4)
+        title_col.addWidget(UI.heading("My Items"))
+        lbl_sub = QLabel("Kelola alat yang kamu sewakan")
+        lbl_sub.setStyleSheet(
+            f"font-size: 13px; color: {UI.TEXT_GRAY}; background: transparent;"
+        )
+        title_col.addWidget(lbl_sub)
+
+        btn_tambah = UI.primary_button("+ Add Item")
+        btn_tambah.setFixedWidth(140)
         btn_tambah.clicked.connect(self._show_form_tambah)
-        hdr.addWidget(btn_tambah)
+
+        hdr.addLayout(title_col)
+        hdr.addStretch()
+        hdr.addWidget(btn_tambah, alignment=Qt.AlignmentFlag.AlignVCenter)
         root.addLayout(hdr)
 
-        # Card — use ShadowCard
-        card = UI.ShadowCard(12)
-        card_layout = QVBoxLayout(card)
-        card_layout.setContentsMargins(20, 20, 20, 20)
-        card_layout.setSpacing(12)
+        # ── Stats bar ─────────────────────────────────────────────────────────
+        self._stats_row = QHBoxLayout()
+        self._stats_row.setSpacing(16)
+        root.addLayout(self._stats_row)
 
-        # Table (ListAlatSaya)
+        # ── Table card ────────────────────────────────────────────────────────
+        card = UI.ShadowCard(14)
+        card_layout = QVBoxLayout(card)
+        card_layout.setContentsMargins(0, 0, 0, 0)
+        card_layout.setSpacing(0)
+
         self._table = QTableWidget()
         self._table.setColumnCount(6)
-        self._table.setHorizontalHeaderLabels(["Nama Alat", "Kategori", "Harga/hari", "Kondisi", "Status", "Aksi"])
-        self._table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self._table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
-        self._table.setColumnWidth(5, 150)
-        self._table.verticalHeader().setVisible(False)
-        self._table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
-        self._table.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
-        self._table.setStyleSheet(
-            f"QTableWidget {{ border: none; font-size: 13px; color: {UI.TEXT_DARK}; }}"
-            f"QHeaderView::section {{ background: {UI.LIGHT_BG}; font-weight: 600; padding: 8px; border: none; }}"
+        self._table.setHorizontalHeaderLabels(
+            ["Nama Alat", "Kategori", "Harga / hari", "Kondisi", "Status", "Aksi"]
         )
-        self._table.setMinimumHeight(400)
+        self._table.setStyleSheet(_TABLE_QSS)
+        self._table.setShowGrid(False)
+        self._table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self._table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self._table.verticalHeader().setVisible(False)
+        self._table.verticalHeader().setDefaultSectionSize(54)
+
+        hh = self._table.horizontalHeader()
+        hh.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        hh.setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        hh.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        hh.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
+        hh.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)
+        hh.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)
+        self._table.setColumnWidth(1, 110)
+        self._table.setColumnWidth(2, 130)
+        self._table.setColumnWidth(3, 130)
+        self._table.setColumnWidth(4, 110)
+        self._table.setColumnWidth(5, 160)
 
         card_layout.addWidget(self._table)
         root.addWidget(card)
@@ -76,6 +136,7 @@ class KatalogSayaView(QWidget):
             return
         if daftar is None:
             daftar = self._ctrl.get_alat_from_pengguna(user.get_id_pengguna())
+        self._render_stats(daftar)
         self._render_table(daftar)
 
     def showFormTambahAlat(self):
@@ -95,15 +156,60 @@ class KatalogSayaView(QWidget):
 
     # ── Internal ──────────────────────────────────────────────────────────────
 
+    def _render_stats(self, daftar: list[Alat]):
+        # Clear old stat chips
+        while self._stats_row.count():
+            item = self._stats_row.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        tersedia = sum(1 for a in daftar if a.get_status_ketersediaan() == "Tersedia")
+        dipinjam = len(daftar) - tersedia
+
+        for label, value, bg, fg in [
+            ("Total Alat",  str(len(daftar)), UI.BLUE_LIGHT,  UI.BLUE),
+            ("Tersedia",    str(tersedia),    UI.GREEN_LIGHT, "#065F46"),
+            ("Dipinjam",    str(dipinjam),    UI.AMBER_LIGHT, "#92400E"),
+        ]:
+            chip = QWidget()
+            chip.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
+            chip.setStyleSheet(
+                f"background: {bg}; border-radius: 10px;"
+            )
+            chip_l = QHBoxLayout(chip)
+            chip_l.setContentsMargins(16, 10, 16, 10)
+            chip_l.setSpacing(8)
+            lbl_v = QLabel(value)
+            lbl_v.setStyleSheet(
+                f"font-size: 22px; font-weight: 700; color: {fg}; background: transparent;"
+            )
+            lbl_k = QLabel(label)
+            lbl_k.setStyleSheet(
+                f"font-size: 12px; color: {fg}; background: transparent;"
+            )
+            chip_l.addWidget(lbl_v)
+            chip_l.addWidget(lbl_k)
+            self._stats_row.addWidget(chip)
+
+        self._stats_row.addStretch()
+
     def _render_table(self, daftar: list[Alat]):
         self._table.setRowCount(0)
         for alat in daftar:
             row = self._table.rowCount()
             self._table.insertRow(row)
+
             self._table.setItem(row, 0, QTableWidgetItem(alat.get_nama_alat()))
-            self._table.setItem(row, 1, QTableWidgetItem(alat.get_kategori()))
-            self._table.setItem(row, 2, QTableWidgetItem(UI.format_rupiah(alat.get_harga_sewa())))
+
+            cat_item = QTableWidgetItem(alat.get_kategori())
+            cat_item.setForeground(QColor(UI.TEXT_MID))
+            self._table.setItem(row, 1, cat_item)
+
+            self._table.setItem(
+                row, 2, QTableWidgetItem(UI.format_rupiah(alat.get_harga_sewa()))
+            )
             self._table.setItem(row, 3, QTableWidgetItem(alat.get_kondisi_alat()))
+
             status_item = QTableWidgetItem(alat.get_status_ketersediaan())
             if alat.get_status_ketersediaan() == "Tersedia":
                 status_item.setForeground(QColor("#065F46"))
@@ -113,35 +219,41 @@ class KatalogSayaView(QWidget):
 
             # Action buttons
             btn_widget = QWidget()
+            btn_widget.setStyleSheet("background: transparent;")
             btn_layout = QHBoxLayout(btn_widget)
-            btn_layout.setContentsMargins(4, 2, 4, 2)
-            btn_layout.setSpacing(6)
+            btn_layout.setContentsMargins(8, 6, 8, 6)
+            btn_layout.setSpacing(8)
 
             btn_edit = QPushButton("Edit")
             btn_edit.setStyleSheet(
-                f"background: {UI.BLUE_LIGHT}; color: {UI.BLUE}; border-radius: 6px;"
-                f"padding: 4px 12px; font-size: 12px; border: none; font-weight: 600;"
+                f"QPushButton {{ background: {UI.BLUE_LIGHT}; color: {UI.BLUE};"
+                f"  border-radius: 6px; padding: 4px 14px; font-size: 12px;"
+                f"  border: none; font-weight: 600; }}"
+                f"QPushButton:hover {{ background: #DDE3FD; }}"
             )
             btn_edit.setCursor(Qt.CursorShape.PointingHandCursor)
 
             btn_hapus = QPushButton("Hapus")
             btn_hapus.setStyleSheet(
-                f"background: {UI.RED_LIGHT}; color: {UI.RED}; border-radius: 6px;"
-                f"padding: 4px 12px; font-size: 12px; border: none; font-weight: 600;"
+                f"QPushButton {{ background: {UI.RED_LIGHT}; color: {UI.RED};"
+                f"  border-radius: 6px; padding: 4px 14px; font-size: 12px;"
+                f"  border: none; font-weight: 600; }}"
+                f"QPushButton:hover {{ background: #FECACA; }}"
             )
             btn_hapus.setCursor(Qt.CursorShape.PointingHandCursor)
 
-            _alat = alat  # capture
-            btn_edit.clicked.connect(lambda _, a=_alat: self.showFormEditAlat(a))
-            btn_hapus.clicked.connect(lambda _, aid=alat.get_id_alat(): self._confirm_hapus(aid))
+            btn_edit.clicked.connect(lambda _, a=alat: self.showFormEditAlat(a))
+            btn_hapus.clicked.connect(
+                lambda _, aid=alat.get_id_alat(): self._confirm_hapus(aid)
+            )
 
             btn_layout.addWidget(btn_edit)
             btn_layout.addWidget(btn_hapus)
+            btn_layout.addStretch()
             self._table.setCellWidget(row, 5, btn_widget)
-            self._table.setRowHeight(row, 46)
 
     def _show_form_tambah(self):
-        dlg = _AlatFormDialog("Tambah Alat", parent=self)
+        dlg = _AlatFormDialog("Add Item", parent=self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
             data = dlg.get_data()
             user = Session.get_current_user()
@@ -154,7 +266,7 @@ class KatalogSayaView(QWidget):
                     self.showPesanError("Gagal menambahkan alat.")
 
     def _show_form_edit(self, alat: Alat):
-        dlg = _AlatFormDialog("Edit Alat", alat=alat, parent=self)
+        dlg = _AlatFormDialog("Edit Item", alat=alat, parent=self)
         if dlg.exec() == QDialog.DialogCode.Accepted:
             data = dlg.get_data()
             if self._ctrl.update_alat(alat.get_id_alat(), data):
@@ -173,33 +285,43 @@ class KatalogSayaView(QWidget):
 
 
 class _AlatFormDialog(QDialog):
-    """Internal dialog for Tambah/Edit Alat."""
+    """Dialog Tambah / Edit Alat."""
 
     def __init__(self, title: str, alat: Alat | None = None, parent=None):
         super().__init__(parent)
         self.setWindowTitle(title)
-        self.setMinimumWidth(440)
+        self.setMinimumWidth(460)
         self._alat = alat
         self._setup_ui()
 
     def _setup_ui(self):
         layout = QVBoxLayout(self)
-        layout.setSpacing(12)
-        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(16)
+        layout.setContentsMargins(28, 28, 28, 24)
+
+        # Title
+        lbl = QLabel(self.windowTitle())
+        lbl.setStyleSheet(
+            f"font-size: 18px; font-weight: 700; color: {UI.TEXT_DARK};"
+        )
+        layout.addWidget(lbl)
+        layout.addWidget(UI.separator())
 
         form = QFormLayout()
         form.setSpacing(10)
+        form.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
 
-        self._tf_nama = UI.styled_input("Nama alat")
-        self._tf_harga = UI.styled_input("Harga sewa / hari (Rp)")
+        self._tf_nama  = UI.styled_input("Nama alat")
+        self._tf_harga = UI.styled_input("Harga sewa per hari (Rp)")
+
         self._ddl_kategori = QComboBox()
         self._ddl_kategori.addItems(CATEGORIES)
-        self._ddl_kategori.setStyleSheet(UI.input_style())
+        self._ddl_kategori.setStyleSheet(UI.input_style() + "min-height: 42px;")
         self._ddl_kategori.setFixedHeight(42)
 
         self._ddl_kondisi = QComboBox()
         self._ddl_kondisi.addItems(CONDITIONS)
-        self._ddl_kondisi.setStyleSheet(UI.input_style())
+        self._ddl_kondisi.setStyleSheet(UI.input_style() + "min-height: 42px;")
         self._ddl_kondisi.setFixedHeight(42)
 
         self._tf_deskripsi = UI.styled_textarea("Deskripsi alat...")
@@ -216,11 +338,19 @@ class _AlatFormDialog(QDialog):
                 self._ddl_kondisi.setCurrentIndex(idx2)
             self._tf_deskripsi.setPlainText(self._alat.get_deskripsi())
 
-        form.addRow("Nama Alat", self._tf_nama)
-        form.addRow("Harga / hari (Rp)", self._tf_harga)
-        form.addRow("Kategori", self._ddl_kategori)
-        form.addRow("Kondisi", self._ddl_kondisi)
-        form.addRow("Deskripsi", self._tf_deskripsi)
+        _lbl_style = (
+            f"font-size: 12px; font-weight: 600; color: {UI.TEXT_MID};"
+        )
+        for label, widget in [
+            ("Nama Alat",          self._tf_nama),
+            ("Harga / hari (Rp)",  self._tf_harga),
+            ("Kategori",           self._ddl_kategori),
+            ("Kondisi",            self._ddl_kondisi),
+            ("Deskripsi",          self._tf_deskripsi),
+        ]:
+            lbl_w = QLabel(label)
+            lbl_w.setStyleSheet(_lbl_style)
+            form.addRow(lbl_w, widget)
 
         self._lbl_error = QLabel()
         self._lbl_error.setStyleSheet(f"color: {UI.RED}; font-size: 12px;")
@@ -229,11 +359,20 @@ class _AlatFormDialog(QDialog):
         btns = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         )
+        btns.button(QDialogButtonBox.StandardButton.Ok).setText("Simpan")
+        btns.button(QDialogButtonBox.StandardButton.Ok).setStyleSheet(
+            f"QPushButton {{ background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
+            f"  stop:0 {UI.BLUE}, stop:1 #6B8EFF);"
+            f"  color: white; border: none; border-radius: 8px;"
+            f"  font-size: 13px; font-weight: 600; padding: 8px 20px; }}"
+            f"QPushButton:hover {{ background: {UI.BLUE_DARK}; }}"
+        )
         btns.accepted.connect(self._validate)
         btns.rejected.connect(self.reject)
 
         layout.addLayout(form)
         layout.addWidget(self._lbl_error)
+        layout.addSpacing(4)
         layout.addWidget(btns)
 
     def _validate(self):
