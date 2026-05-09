@@ -1,6 +1,8 @@
 """main.py — Entry point for Pinjemin Aja! (PyQt6)"""
 import sys
-from PyQt6.QtWidgets import QApplication, QStackedWidget, QWidget
+from PyQt6.QtWidgets import QApplication, QStackedWidget, QGraphicsOpacityEffect
+from PyQt6.QtCore import QPropertyAnimation, QEasingCurve
+from PyQt6.QtGui import QFont
 
 from database.database import initialize
 from database.seeder import seed
@@ -9,8 +11,6 @@ from views.registrasi_view import RegistrasiView
 from views.login_view      import LoginView
 from views.main_window     import MainWindow
 
-
-# ── Page indices ──────────────────────────────────────────────────────────────
 PAGE_LOGIN    = 0
 PAGE_REGISTER = 1
 PAGE_MAIN     = 2
@@ -32,9 +32,7 @@ class App(QStackedWidget):
 
         self.addWidget(self._login_view)   # 0
         self.addWidget(self._reg_view)     # 1
-        # MainWindow added on first login (index 2)
 
-        # Signals
         self._login_view.go_register.connect(self._show_register)
         self._login_view.login_success.connect(self._on_login_success)
         self._reg_view.go_login.connect(self._show_login)
@@ -45,41 +43,84 @@ class App(QStackedWidget):
 
     def _show_login(self):
         self._login_view.showFormLogin()
-        self.setCurrentIndex(PAGE_LOGIN)
+        self._fade_to(PAGE_LOGIN)
 
     def _show_register(self):
         self._reg_view.showFormRegistrasi()
-        self.setCurrentIndex(PAGE_REGISTER)
+        self._fade_to(PAGE_REGISTER)
 
     def _on_login_success(self, pengguna):
-        # Build (or rebuild) MainWindow
         if self._main_window is not None:
             self.removeWidget(self._main_window)
             self._main_window.deleteLater()
 
         self._main_window = MainWindow()
         self._main_window.logout_requested.connect(self._on_logout)
-        self.addWidget(self._main_window)   # becomes index 2
-        self.setCurrentIndex(PAGE_MAIN)
+        self.addWidget(self._main_window)
+        self._fade_to(PAGE_MAIN)
 
     def _on_logout(self):
         self._login_view.showFormLogin()
-        self.setCurrentIndex(PAGE_LOGIN)
+        self._fade_to(PAGE_LOGIN)
+
+    def _fade_to(self, index: int):
+        """Fade-out → switch → fade-in between top-level screens."""
+        eff = QGraphicsOpacityEffect(self)
+        self.setGraphicsEffect(eff)
+        a_out = QPropertyAnimation(eff, b"opacity", self)
+        a_out.setDuration(120)
+        a_out.setStartValue(1.0)
+        a_out.setEndValue(0.0)
+        a_out.setEasingCurve(QEasingCurve.Type.OutCubic)
+
+        def _switch():
+            self.setCurrentIndex(index)
+            a_in = QPropertyAnimation(eff, b"opacity", self)
+            a_in.setDuration(200)
+            a_in.setStartValue(0.0)
+            a_in.setEndValue(1.0)
+            a_in.setEasingCurve(QEasingCurve.Type.InCubic)
+            a_in.start()
+            self._anim_ref = a_in
+
+        a_out.finished.connect(_switch)
+        a_out.start()
+        self._anim_ref = a_out
 
 
 def main():
-    # 1. Init database
     initialize()
     seed()
 
-    # 2. Start Qt app
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
 
-    # 3. Apply global font
-    from PyQt6.QtGui import QFont
+    # Global font
     font = QFont("Segoe UI", 10)
     app.setFont(font)
+
+    # Global stylesheet — clean scrollbars + remove QStackedWidget borders
+    app.setStyleSheet(
+        "QScrollBar:vertical {"
+        "  width: 6px; background: transparent; margin: 0;"
+        "}"
+        "QScrollBar::handle:vertical {"
+        "  background: #CBD5E1; border-radius: 3px; min-height: 30px;"
+        "}"
+        "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+        "  height: 0px;"
+        "}"
+        "QScrollBar:horizontal {"
+        "  height: 6px; background: transparent; margin: 0;"
+        "}"
+        "QScrollBar::handle:horizontal {"
+        "  background: #CBD5E1; border-radius: 3px; min-width: 30px;"
+        "}"
+        "QToolTip {"
+        "  background: #1E293B; color: white; border: none;"
+        "  border-radius: 6px; padding: 5px 10px; font-size: 12px;"
+        "}"
+    )
 
     window = App()
     window.show()

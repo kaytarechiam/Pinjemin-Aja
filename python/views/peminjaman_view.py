@@ -80,8 +80,10 @@ class PeminjamanView(QScrollArea):
 
         content.addWidget(img_box)
 
-        # ── Info panel ─────────────────────────────────────────────────────
-        info = QVBoxLayout()
+        # ── Info panel — use ShadowCard ────────────────────────────────────
+        info_card = UI.ShadowCard(14)
+        info = QVBoxLayout(info_card)
+        info.setContentsMargins(28, 28, 28, 28)
         info.setSpacing(14)
         info.setAlignment(Qt.AlignmentFlag.AlignTop)
 
@@ -160,11 +162,6 @@ class PeminjamanView(QScrollArea):
         self._lbl_saldo = QLabel(f"Saldo tersedia: {UI.format_rupiah(saldo_now)}")
         self._lbl_saldo.setStyleSheet(f"font-size: 13px; color: {UI.TEXT_MID};")
 
-        self._lbl_error = QLabel()
-        self._lbl_error.setStyleSheet(f"color: {UI.RED}; font-size: 12px;")
-        self._lbl_error.setWordWrap(True)
-        self._lbl_error.hide()
-
         # Rent button / disabled
         if alat.get_status_ketersediaan() == "Tersedia":
             self._btn_pinjam = UI.primary_button("🛒  Konfirmasi Peminjaman")
@@ -199,10 +196,9 @@ class PeminjamanView(QScrollArea):
         info.addLayout(dur_row)
         info.addWidget(self._lbl_total)
         info.addWidget(self._lbl_saldo)
-        info.addWidget(self._lbl_error)
         info.addLayout(btn_row)
 
-        content.addLayout(info)
+        content.addWidget(info_card)
         layout.addLayout(content)
 
         self._alat = alat
@@ -213,19 +209,17 @@ class PeminjamanView(QScrollArea):
 
     def showFormPeminjaman(self):
         self._spin_durasi.setValue(1)
-        self._lbl_error.hide()
 
     def _update_total(self):
         durasi = self._spin_durasi.value()
         total = self._alat.get_harga_sewa() * durasi
         self._lbl_total.setText(f"Total: {UI.format_rupiah(total)}  ({durasi} hari)")
 
-    def showPesanSukses(self):
-        UI.show_alert("Berhasil! 🎉", "Peminjaman berhasil dicatat.", self)
+    def showPesanSukses(self, pesan: str = "Peminjaman berhasil dicatat."):
+        UI.show_toast(pesan, self, "success")
 
     def showPesanError(self, pesan: str):
-        self._lbl_error.setText(pesan)
-        self._lbl_error.show()
+        UI.show_toast(pesan, self, "error")
 
     def _on_pinjam(self):
         user = Session.get_current_user()

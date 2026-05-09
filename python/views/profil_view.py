@@ -33,9 +33,8 @@ class ProfilView(QScrollArea):
 
         layout.addWidget(UI.heading("My Account"))
 
-        # Profile card
-        card = QWidget()
-        card.setStyleSheet(f"background: white; border-radius: 14px; border: 1px solid {UI.BORDER};")
+        # Profile card — use ShadowCard
+        card = UI.ShadowCard(14)
         card.setMaximumWidth(600)
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(28, 28, 28, 28)
@@ -97,16 +96,10 @@ class ProfilView(QScrollArea):
             card_layout.addWidget(lbl)
             card_layout.addWidget(widget)
 
-        self._lbl_feedback = QLabel()
-        self._lbl_feedback.setStyleSheet(f"color: {UI.RED}; font-size: 12px;")
-        self._lbl_feedback.setWordWrap(True)
-        self._lbl_feedback.hide()
-
         btn_simpan = UI.primary_button("💾  Save Changes")
         btn_simpan.setFixedWidth(200)
         btn_simpan.clicked.connect(self._on_simpan)
 
-        card_layout.addWidget(self._lbl_feedback)
         card_layout.addWidget(btn_simpan)
 
         layout.addWidget(card)
@@ -131,14 +124,10 @@ class ProfilView(QScrollArea):
         self._tf_konfirmasi.clear()
 
     def showPesanSukses(self, pesan: str):
-        self._lbl_feedback.setStyleSheet(f"color: {UI.GREEN}; font-size: 12px;")
-        self._lbl_feedback.setText(pesan)
-        self._lbl_feedback.show()
+        UI.show_toast(pesan, self, "success")
 
     def showPesanError(self, pesan: str):
-        self._lbl_feedback.setStyleSheet(f"color: {UI.RED}; font-size: 12px;")
-        self._lbl_feedback.setText(pesan)
-        self._lbl_feedback.show()
+        UI.show_toast(pesan, self, "error")
 
     def _on_simpan(self):
         user = Session.get_current_user()

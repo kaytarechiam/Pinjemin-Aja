@@ -1,212 +1,331 @@
-"""Shared styling constants and widget factories for Pinjemin Aja! (PyQt6)."""
+"""UI helpers, styles, and widget factories — PyQt6 modern design."""
 from __future__ import annotations
-import os
-from typing import Optional
+from pathlib import Path
 
 from PyQt6.QtWidgets import (
-    QLabel, QPushButton, QLineEdit, QTextEdit, QFrame,
-    QMessageBox, QWidget, QHBoxLayout, QSizePolicy
+    QLabel, QWidget, QFrame, QPushButton, QLineEdit,
+    QTextEdit, QGraphicsDropShadowEffect, QHBoxLayout,
+    QMessageBox
 )
-from PyQt6.QtGui import QFont, QPixmap, QColor
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint
+from PyQt6.QtGui import QColor, QPixmap, QPainter, QPainterPath
 
-# ── Colour palette ────────────────────────────────────────────────────────────
+# ── Brand colours ─────────────────────────────────────────────────────────────
 BLUE        = "#3D5AF1"
-BLUE_DARK   = "#2D46D6"
-BLUE_LIGHT  = "#EEF1FF"
-LIGHT_BG    = "#F7F8FC"
-BORDER      = "#E8EAF0"
-TEXT_DARK   = "#1A1D2E"
-TEXT_MID    = "#4B5563"
-TEXT_GRAY   = "#9CA3AF"
-WHITE       = "#FFFFFF"
+BLUE_DARK   = "#2541D0"
+BLUE_LIGHT  = "#EEF1FE"
+PURPLE      = "#6366F1"
 GREEN       = "#10B981"
 GREEN_LIGHT = "#D1FAE5"
 RED         = "#EF4444"
 RED_LIGHT   = "#FEE2E2"
-YELLOW_LIGHT= "#FEF3C7"
-YELLOW_DARK = "#92400E"
+AMBER       = "#F59E0B"
+AMBER_LIGHT = "#FEF3C7"
+LIGHT_BG    = "#F8FAFC"
+BORDER      = "#E2E8F0"
+TEXT_DARK   = "#0F172A"
+TEXT_MID    = "#475569"
+TEXT_GRAY   = "#94A3B8"
+SIDEBAR_BG  = "#1E1B4B"
+CARD_BG     = "#FFFFFF"
 
-IMAGES_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "resources", "images")
-
-# ── Item → image filename map ─────────────────────────────────────────────────
-_ITEM_IMAGE_MAP = {
-    "Waffle Maker":         "waffle_maker.jpg",
-    "Slow Juicer":          "slow_juicer.jpg",
-    "High-Pressure Washer": "pressure_washer.jpg",
-    "Wet & Dry Vacuum":     "vacuum_cleaner.jpg",
-    "Cordless Power Drill": "power_drill.jpg",
-    "Step Ladder":          "step_ladder.jpg",
-    "Electric Sander":      "electric_sander.jpg",
-    "Projector HD":         "projector.jpg",
-    "Food Processor":       "food_processor.jpg",
-    "Ice Cream Maker":      "ice_cream_maker.jpg",
-    "Jumbo Rice Cooker":    "rice_cooker.jpg",
-    "Artisan Stand Mixer":  "stand_mixer.jpg",
-    "Foldable Hand Truck":  "hand_truck.jpg",
-    "Garden Hose Set":      "garden_hose.jpg",
-    "Electric Lawn Mower":  "lawn_mower.jpg",
-    "Portable Blower":      "portable_blower.jpg",
+# ── Image map ─────────────────────────────────────────────────────────────────
+_IMG_DIR = Path(__file__).parent.parent / "resources" / "images"
+ITEM_IMAGE_MAP = {
+    "Waffle Maker":        "waffle_maker.jpg",
+    "Stand Mixer":         "stand_mixer.jpg",
+    "Food Processor":      "food_processor.jpg",
+    "Slow Juicer":         "slow_juicer.jpg",
+    "Ice Cream Maker":     "ice_cream_maker.jpg",
+    "Rice Cooker":         "rice_cooker.jpg",
+    "Power Drill":         "power_drill.jpg",
+    "Electric Sander":     "electric_sander.jpg",
+    "Foldable Hand Truck": "hand_truck.jpg",
+    "Step Ladder":         "step_ladder.jpg",
+    "Pressure Washer":     "pressure_washer.jpg",
+    "Vacuum Cleaner":      "vacuum_cleaner.jpg",
+    "Portable Blower":     "portable_blower.jpg",
+    "Garden Hose":         "garden_hose.jpg",
+    "Lawn Mower":          "lawn_mower.jpg",
+    "Portable Projector":  "projector.jpg",
 }
 
-def get_item_pixmap(nama_alat: str, w: int = 300, h: int = 180) -> Optional[QPixmap]:
-    fname = _ITEM_IMAGE_MAP.get(nama_alat)
+
+def get_item_pixmap(nama_alat: str, w: int, h: int) -> QPixmap | None:
+    fname = ITEM_IMAGE_MAP.get(nama_alat)
     if not fname:
         return None
-    path = os.path.join(IMAGES_DIR, fname)
-    if not os.path.exists(path):
+    path = _IMG_DIR / fname
+    if not path.exists():
         return None
-    pm = QPixmap(path)
-    if pm.isNull():
-        return None
+    pm = QPixmap(str(path))
     return pm.scaled(w, h, Qt.AspectRatioMode.KeepAspectRatioByExpanding,
                      Qt.TransformationMode.SmoothTransformation)
 
-# ── Category helpers ──────────────────────────────────────────────────────────
-def category_color(kategori: str) -> str:
-    return {
-        "Kitchen":     "#FFF7ED",
-        "Tools":       "#EFF6FF",
-        "Cleaning":    "#F0FDF4",
-        "Electronics": "#FAF5FF",
-        "Gardening":   "#ECFDF5",
-    }.get(kategori, LIGHT_BG)
 
-def category_emoji(kategori: str) -> str:
-    return {
-        "Kitchen":     "🍳",
-        "Tools":       "🔧",
-        "Cleaning":    "🧹",
-        "Electronics": "💡",
-        "Gardening":   "🌱",
-    }.get(kategori, "📦")
+# ── Category helpers ──────────────────────────────────────────────────────────
+_CAT_COLORS = {
+    "Kitchen":     "#FEF3C7",
+    "Tools":       "#DBEAFE",
+    "Cleaning":    "#D1FAE5",
+    "Electronics": "#EDE9FE",
+    "Gardening":   "#DCFCE7",
+}
+_CAT_EMOJIS = {
+    "Kitchen": "🍳", "Tools": "🔧",
+    "Cleaning": "🧹", "Electronics": "📱", "Gardening": "🌱",
+}
+
+
+def category_color(cat: str) -> str:
+    return _CAT_COLORS.get(cat, "#F1F5F9")
+
+
+def category_emoji(cat: str) -> str:
+    return _CAT_EMOJIS.get(cat, "📦")
+
 
 # ── Formatting ────────────────────────────────────────────────────────────────
 def format_rupiah(amount: float) -> str:
-    return f"Rp {amount:,.0f}".replace(",", ".")
+    return "Rp {:,.0f}".format(amount).replace(",", ".")
 
-# ── Stylesheet helpers ────────────────────────────────────────────────────────
-def card_style() -> str:
-    return (f"background: {WHITE}; border-radius: 12px;"
-            f"border: 1px solid {BORDER};")
 
+# ── Drop shadow ───────────────────────────────────────────────────────────────
+def add_shadow(widget: QWidget, blur: int = 18, color: str = "#000000",
+               opacity: float = 0.10, offset=(0, 4)) -> QGraphicsDropShadowEffect:
+    shadow = QGraphicsDropShadowEffect(widget)
+    shadow.setBlurRadius(blur)
+    c = QColor(color)
+    c.setAlphaF(opacity)
+    shadow.setColor(c)
+    shadow.setOffset(*offset)
+    widget.setGraphicsEffect(shadow)
+    return shadow
+
+
+# ── QSS fragments ─────────────────────────────────────────────────────────────
 def input_style() -> str:
-    return (f"background: {WHITE}; border: 1.5px solid {BORDER};"
-            f"border-radius: 8px; padding: 8px 12px; font-size: 13px; color: {TEXT_DARK};")
+    return (
+        f"background: white; border: 1.5px solid {BORDER}; border-radius: 10px;"
+        f"padding: 8px 14px; font-size: 13px; color: {TEXT_DARK};"
+    )
 
-def primary_btn_style() -> str:
-    return (f"background: {BLUE}; color: white; border-radius: 8px;"
-            f"padding: 10px 20px; font-size: 13px; font-weight: 600; border: none;")
-
-def outline_btn_style() -> str:
-    return (f"background: white; color: {BLUE}; border-radius: 8px;"
-            f"border: 1.5px solid {BLUE}; padding: 9px 20px; font-size: 13px; font-weight: 600;")
-
-def danger_btn_style() -> str:
-    return (f"background: {RED}; color: white; border-radius: 8px;"
-            f"padding: 8px 16px; font-size: 13px; font-weight: 600; border: none;")
 
 # ── Widget factories ──────────────────────────────────────────────────────────
-def heading(text: str) -> QLabel:
-    lbl = QLabel(text)
-    lbl.setStyleSheet(f"font-size: 22px; font-weight: 700; color: {TEXT_DARK}; background: transparent;")
-    return lbl
-
-def subheading(text: str) -> QLabel:
-    lbl = QLabel(text)
-    lbl.setStyleSheet(f"font-size: 15px; font-weight: 600; color: {TEXT_DARK}; background: transparent;")
-    return lbl
-
-def label(text: str) -> QLabel:
-    lbl = QLabel(text)
-    lbl.setStyleSheet(f"font-size: 13px; color: {TEXT_DARK}; background: transparent;")
-    return lbl
-
-def secondary_label(text: str) -> QLabel:
-    lbl = QLabel(text)
-    lbl.setStyleSheet(f"font-size: 12px; color: {TEXT_GRAY}; background: transparent;")
-    return lbl
-
 def primary_button(text: str) -> QPushButton:
     btn = QPushButton(text)
-    btn.setStyleSheet(primary_btn_style())
-    btn.setCursor(Qt.CursorShape.PointingHandCursor)
     btn.setFixedHeight(42)
+    btn.setCursor(Qt.CursorShape.PointingHandCursor)
+    btn.setStyleSheet(
+        f"QPushButton {{"
+        f"  background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
+        f"  stop:0 {BLUE}, stop:1 {PURPLE});"
+        f"  color: white; border: none; border-radius: 10px;"
+        f"  font-size: 13px; font-weight: 600; padding: 0 20px;"
+        f"}}"
+        f"QPushButton:hover {{"
+        f"  background: qlineargradient(x1:0,y1:0,x2:1,y2:0,"
+        f"  stop:0 {BLUE_DARK}, stop:1 {BLUE});"
+        f"}}"
+        f"QPushButton:pressed {{ padding-top: 2px; }}"
+    )
     return btn
+
 
 def outline_button(text: str) -> QPushButton:
     btn = QPushButton(text)
-    btn.setStyleSheet(outline_btn_style())
-    btn.setCursor(Qt.CursorShape.PointingHandCursor)
     btn.setFixedHeight(42)
+    btn.setCursor(Qt.CursorShape.PointingHandCursor)
+    btn.setStyleSheet(
+        f"QPushButton {{"
+        f"  background: transparent; color: {BLUE};"
+        f"  border: 1.5px solid {BLUE}; border-radius: 10px;"
+        f"  font-size: 13px; font-weight: 600; padding: 0 20px;"
+        f"}}"
+        f"QPushButton:hover {{ background: {BLUE_LIGHT}; }}"
+    )
     return btn
 
-def danger_button(text: str) -> QPushButton:
-    btn = QPushButton(text)
-    btn.setStyleSheet(danger_btn_style())
-    btn.setCursor(Qt.CursorShape.PointingHandCursor)
-    btn.setFixedHeight(38)
-    return btn
 
 def styled_input(placeholder: str = "") -> QLineEdit:
-    inp = QLineEdit()
-    inp.setPlaceholderText(placeholder)
-    inp.setStyleSheet(input_style())
-    inp.setFixedHeight(42)
-    return inp
+    le = QLineEdit()
+    le.setPlaceholderText(placeholder)
+    le.setFixedHeight(44)
+    le.setStyleSheet(
+        f"QLineEdit {{"
+        f"  background: white; border: 1.5px solid {BORDER}; border-radius: 10px;"
+        f"  padding: 0 14px; font-size: 13px; color: {TEXT_DARK};"
+        f"}}"
+        f"QLineEdit:focus {{ border: 2px solid {BLUE}; }}"
+        f"QLineEdit::placeholder {{ color: {TEXT_GRAY}; }}"
+    )
+    return le
+
 
 def styled_password(placeholder: str = "") -> QLineEdit:
-    inp = styled_input(placeholder)
-    inp.setEchoMode(QLineEdit.EchoMode.Password)
-    return inp
+    le = styled_input(placeholder)
+    le.setEchoMode(QLineEdit.EchoMode.Password)
+    return le
+
 
 def styled_textarea(placeholder: str = "") -> QTextEdit:
-    ta = QTextEdit()
-    ta.setPlaceholderText(placeholder)
-    ta.setStyleSheet(input_style())
-    return ta
+    te = QTextEdit()
+    te.setPlaceholderText(placeholder)
+    te.setStyleSheet(
+        f"QTextEdit {{"
+        f"  background: white; border: 1.5px solid {BORDER}; border-radius: 10px;"
+        f"  padding: 10px 14px; font-size: 13px; color: {TEXT_DARK};"
+        f"}}"
+        f"QTextEdit:focus {{ border: 2px solid {BLUE}; }}"
+    )
+    return te
+
+
+def heading(text: str) -> QLabel:
+    lbl = QLabel(text)
+    lbl.setStyleSheet(
+        f"font-size: 24px; font-weight: 700; color: {TEXT_DARK}; background: transparent;"
+    )
+    return lbl
+
+
+def subheading(text: str) -> QLabel:
+    lbl = QLabel(text)
+    lbl.setStyleSheet(
+        f"font-size: 16px; font-weight: 600; color: {TEXT_DARK}; background: transparent;"
+    )
+    return lbl
+
 
 def separator() -> QFrame:
-    line = QFrame()
-    line.setFrameShape(QFrame.Shape.HLine)
-    line.setStyleSheet(f"color: {BORDER};")
-    return line
+    sep = QFrame()
+    sep.setFrameShape(QFrame.Shape.HLine)
+    sep.setFixedHeight(1)
+    sep.setStyleSheet(f"background: {BORDER}; border: none;")
+    return sep
+
 
 def badge(text: str, bg: str, fg: str) -> QLabel:
     lbl = QLabel(text)
     lbl.setStyleSheet(
-        f"background: {bg}; color: {fg}; border-radius: 10px;"
-        f"padding: 2px 10px; font-size: 10px; font-weight: 600;"
+        f"background: {bg}; color: {fg}; border-radius: 5px;"
+        f"padding: 2px 9px; font-size: 11px; font-weight: 600;"
     )
     lbl.setFixedHeight(22)
     return lbl
 
-def available_badge()   -> QLabel: return badge("TERSEDIA",       GREEN_LIGHT, "#065F46")
-def unavailable_badge() -> QLabel: return badge("SEDANG DIPINJAM",RED_LIGHT,   "#991B1B")
-def ongoing_badge()     -> QLabel: return badge("BERJALAN",       YELLOW_LIGHT,YELLOW_DARK)
-def completed_badge()   -> QLabel: return badge("SELESAI",        GREEN_LIGHT, "#065F46")
 
-# ── Dialogs ───────────────────────────────────────────────────────────────────
+def available_badge()   -> QLabel: return badge("● TERSEDIA", GREEN_LIGHT, "#065F46")
+def unavailable_badge() -> QLabel: return badge("● DIPINJAM", RED_LIGHT,   "#991B1B")
+def ongoing_badge()     -> QLabel: return badge("● BERJALAN", AMBER_LIGHT, "#92400E")
+def completed_badge()   -> QLabel: return badge("● SELESAI",  GREEN_LIGHT, "#065F46")
+
+
+# ── Shadow card ───────────────────────────────────────────────────────────────
+class ShadowCard(QWidget):
+    """White rounded card with drop-shadow. Use as a layout container."""
+
+    def __init__(self, radius: int = 14, parent=None):
+        super().__init__(parent)
+        self._radius = radius
+        add_shadow(self, blur=24, opacity=0.09, offset=(0, 6))
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        path = QPainterPath()
+        path.addRoundedRect(
+            0.0, 0.0, float(self.width()), float(self.height()),
+            self._radius, self._radius
+        )
+        painter.fillPath(path, QColor(CARD_BG))
+
+
+# ── Slide-in toast notification ───────────────────────────────────────────────
+class _Toast(QWidget):
+    _STYLES = {
+        "success": ("#065F46", "#D1FAE5", "✓"),
+        "error":   ("#991B1B", "#FEE2E2", "✕"),
+        "warning": ("#92400E", "#FEF3C7", "⚠"),
+        "info":    ("#1E40AF", "#DBEAFE", "ℹ"),
+    }
+
+    def __init__(self, message: str, kind: str, parent: QWidget):
+        super().__init__(parent)
+        fg, bg, icon = self._STYLES.get(kind, self._STYLES["info"])
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        self.setStyleSheet(
+            f"background: {bg}; border-radius: 10px; border: 1.5px solid {fg}55;"
+        )
+        add_shadow(self, blur=20, opacity=0.13, offset=(0, 4))
+
+        lay = QHBoxLayout(self)
+        lay.setContentsMargins(14, 11, 14, 11)
+        lay.setSpacing(10)
+
+        lbl_i = QLabel(icon)
+        lbl_i.setStyleSheet(
+            f"color: {fg}; font-size: 15px; font-weight: 700; background: transparent;"
+        )
+        lbl_m = QLabel(message)
+        lbl_m.setStyleSheet(
+            f"color: {fg}; font-size: 13px; font-weight: 500; background: transparent;"
+        )
+        lbl_m.setWordWrap(True)
+        lbl_m.setMaximumWidth(340)
+        lay.addWidget(lbl_i)
+        lay.addWidget(lbl_m, 1)
+
+        self.adjustSize()
+        self._show_animated(parent)
+        QTimer.singleShot(3500, self._hide_animated)
+
+    def _show_animated(self, parent: QWidget):
+        w = max(300, self.sizeHint().width())
+        h = max(50, self.sizeHint().height())
+        self.setFixedSize(w, h)
+        x = parent.width() - w - 20
+        self.move(x, -h - 10)
+        self.show()
+        anim = QPropertyAnimation(self, b"pos", self)
+        anim.setDuration(300)
+        anim.setStartValue(QPoint(x, -h - 10))
+        anim.setEndValue(QPoint(x, 16))
+        anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+        anim.start()
+        self._anim = anim
+
+    def _hide_animated(self):
+        if not self.isVisible():
+            return
+        start = self.pos()
+        anim = QPropertyAnimation(self, b"pos", self)
+        anim.setDuration(220)
+        anim.setStartValue(start)
+        anim.setEndValue(QPoint(start.x(), -self.height() - 10))
+        anim.setEasingCurve(QEasingCurve.Type.InCubic)
+        anim.finished.connect(self.close)
+        anim.start()
+        self._anim = anim
+
+
+def show_toast(message: str, parent: QWidget, kind: str = "success") -> _Toast:
+    """Slide-in toast notification, top-right of parent widget."""
+    return _Toast(message, kind, parent)
+
+
+# ── Legacy dialog helpers ─────────────────────────────────────────────────────
 def show_alert(title: str, message: str, parent=None):
-    msg = QMessageBox(parent)
-    msg.setWindowTitle(title)
-    msg.setText(message)
-    msg.setIcon(QMessageBox.Icon.Information)
-    msg.exec()
+    QMessageBox.information(parent, title, message)
 
-def show_error(message: str, parent=None):
-    msg = QMessageBox(parent)
-    msg.setWindowTitle("Error")
-    msg.setText(message)
-    msg.setIcon(QMessageBox.Icon.Critical)
-    msg.exec()
+
+def show_error(title: str, message: str, parent=None):
+    QMessageBox.critical(parent, title, message)
+
 
 def show_confirm(message: str, parent=None) -> bool:
-    msg = QMessageBox(parent)
-    msg.setWindowTitle("Konfirmasi")
-    msg.setText(message)
-    msg.setStandardButtons(
-        QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
+    reply = QMessageBox.question(
+        parent, "Konfirmasi", message,
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
     )
-    msg.setIcon(QMessageBox.Icon.Question)
-    return msg.exec() == QMessageBox.StandardButton.Ok
+    return reply == QMessageBox.StandardButton.Yes

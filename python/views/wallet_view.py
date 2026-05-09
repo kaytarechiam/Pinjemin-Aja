@@ -33,7 +33,7 @@ class WalletView(QScrollArea):
 
         layout.addWidget(UI.heading("Dompet Digital"))
 
-        # Balance card
+        # Balance card (gradient blue stays)
         balance_card = QWidget()
         balance_card.setStyleSheet(
             f"background: qlineargradient(x1:0,y1:0,x2:1,y2:1,"
@@ -85,9 +85,8 @@ class WalletView(QScrollArea):
 
         layout.addLayout(btn_row)
 
-        # Top-up / withdraw form card
-        form_card = QWidget()
-        form_card.setStyleSheet(f"background: white; border-radius: 14px; border: 1px solid {UI.BORDER};")
+        # Top-up / withdraw form card — use ShadowCard
+        form_card = UI.ShadowCard(14)
         form_card.setMaximumWidth(600)
         fc_layout = QVBoxLayout(form_card)
         fc_layout.setContentsMargins(28, 28, 28, 28)
@@ -104,7 +103,7 @@ class WalletView(QScrollArea):
         self._tf_nominal = UI.styled_input("Masukkan nominal...")
         self._tf_nominal.setFixedHeight(46)
 
-        # Quick-amount buttons
+        # Quick-amount buttons (keep blue-light style)
         quick_row = QHBoxLayout()
         quick_row.setSpacing(8)
         for amount in [50_000, 100_000, 200_000, 500_000]:
@@ -118,11 +117,6 @@ class WalletView(QScrollArea):
             quick_row.addWidget(btn)
         quick_row.addStretch()
 
-        self._lbl_feedback = QLabel()
-        self._lbl_feedback.setWordWrap(True)
-        self._lbl_feedback.setStyleSheet(f"color: {UI.RED}; font-size: 12px;")
-        self._lbl_feedback.hide()
-
         self._btn_submit = UI.primary_button("Konfirmasi Top Up")
         self._btn_submit.setFixedWidth(200)
         self._btn_submit.clicked.connect(self._on_submit)
@@ -131,7 +125,6 @@ class WalletView(QScrollArea):
         fc_layout.addWidget(lbl_nominal)
         fc_layout.addWidget(self._tf_nominal)
         fc_layout.addLayout(quick_row)
-        fc_layout.addWidget(self._lbl_feedback)
         fc_layout.addWidget(self._btn_submit)
 
         layout.addWidget(form_card)
@@ -153,24 +146,18 @@ class WalletView(QScrollArea):
         self._lbl_form_title.setText("Top Up Saldo")
         self._btn_submit.setText("Konfirmasi Top Up")
         self._tf_nominal.clear()
-        self._lbl_feedback.hide()
 
     def showFormTarikDana(self):
         self._mode = "tarik"
         self._lbl_form_title.setText("Tarik Dana")
         self._btn_submit.setText("Konfirmasi Penarikan")
         self._tf_nominal.clear()
-        self._lbl_feedback.hide()
 
     def showPesanSukses(self, pesan: str):
-        self._lbl_feedback.setStyleSheet(f"color: {UI.GREEN}; font-size: 12px;")
-        self._lbl_feedback.setText(pesan)
-        self._lbl_feedback.show()
+        UI.show_toast(pesan, self, "success")
 
     def showPesanError(self, pesan: str):
-        self._lbl_feedback.setStyleSheet(f"color: {UI.RED}; font-size: 12px;")
-        self._lbl_feedback.setText(pesan)
-        self._lbl_feedback.show()
+        UI.show_toast(pesan, self, "error")
 
     # ── Internal ──────────────────────────────────────────────────────────────
 

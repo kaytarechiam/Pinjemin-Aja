@@ -41,9 +41,8 @@ class KatalogSayaView(QWidget):
         hdr.addWidget(btn_tambah)
         root.addLayout(hdr)
 
-        # Card
-        card = QWidget()
-        card.setStyleSheet(f"background: white; border-radius: 12px; border: 1px solid {UI.BORDER};")
+        # Card — use ShadowCard
+        card = UI.ShadowCard(12)
         card_layout = QVBoxLayout(card)
         card_layout.setContentsMargins(20, 20, 20, 20)
         card_layout.setSpacing(12)
@@ -64,12 +63,7 @@ class KatalogSayaView(QWidget):
         )
         self._table.setMinimumHeight(400)
 
-        self._lbl_feedback = QLabel()
-        self._lbl_feedback.setStyleSheet(f"color: {UI.GREEN}; font-size: 12px;")
-        self._lbl_feedback.hide()
-
         card_layout.addWidget(self._table)
-        card_layout.addWidget(self._lbl_feedback)
         root.addWidget(card)
 
         self.showKatalogSaya()
@@ -94,14 +88,10 @@ class KatalogSayaView(QWidget):
         self._confirm_hapus(id_alat)
 
     def showPesanSukses(self, pesan: str):
-        self._lbl_feedback.setStyleSheet(f"color: {UI.GREEN}; font-size: 12px;")
-        self._lbl_feedback.setText(pesan)
-        self._lbl_feedback.show()
+        UI.show_toast(pesan, self, "success")
 
     def showPesanError(self, pesan: str):
-        self._lbl_feedback.setStyleSheet(f"color: {UI.RED}; font-size: 12px;")
-        self._lbl_feedback.setText(pesan)
-        self._lbl_feedback.show()
+        UI.show_toast(pesan, self, "error")
 
     # ── Internal ──────────────────────────────────────────────────────────────
 
